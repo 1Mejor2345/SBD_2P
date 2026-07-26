@@ -102,7 +102,7 @@ CREATE TABLE personas (
     genero ENUM('M','F','OTRO'),
     esta_activo BOOLEAN DEFAULT TRUE,
     fecha_registro DATETIME DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT uq_personas_doc UNIQUE (tipo_documento, numero_documento),
+    CONSTRAINT uq_personas_doc UNIQUE (tipo_documento, numero_documento, nacionalidad),
     CONSTRAINT fk_personas_nacionalidad FOREIGN KEY (nacionalidad) REFERENCES paises(codigo_iso) ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
@@ -137,7 +137,7 @@ CREATE TABLE clases_servicio (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nombre VARCHAR(30) NOT NULL UNIQUE,
     descripcion VARCHAR(200),
-    factor_precio DECIMAL(3,2) NOT NULL DEFAULT 1.00
+    factor_precio DECIMAL(4,2) NOT NULL DEFAULT 1.00
 ) ENGINE=InnoDB;
 
 -- 14. familias_tarifa
@@ -208,6 +208,7 @@ CREATE TABLE boletos (
     precio DECIMAL(10,2) NOT NULL CHECK (precio >= 0),
     estado ENUM('EMITIDO','CHECKIN','ABORDADO','COMPLETADO','CANCELADO','NO_SHOW') DEFAULT 'EMITIDO',
     fecha_emision DATETIME DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_boletos_vuelo_asiento UNIQUE (vuelo_id, numero_asiento),
     CONSTRAINT fk_boletos_reservacion FOREIGN KEY (reservacion_id) REFERENCES reservaciones(id) ON UPDATE CASCADE ON DELETE CASCADE,
     CONSTRAINT fk_boletos_pasajero FOREIGN KEY (pasajero_id) REFERENCES personas(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_boletos_vuelo FOREIGN KEY (vuelo_id) REFERENCES vuelos(id) ON UPDATE CASCADE ON DELETE RESTRICT,

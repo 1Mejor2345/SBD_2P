@@ -19,7 +19,7 @@ BEGIN
     INSERT INTO auditoria (tabla_afectada, registro_id, accion, datos_anteriores, datos_nuevos, usuario)
     VALUES ('reservaciones', NEW.id, 'UPDATE', 
             JSON_OBJECT('estado', OLD.estado), 
-            JSON_OBJECT('estado', NEW.estado), 
+            JSON_OBJECT('estado', NEW.estado, 'contacto_email', NEW.contacto_email, 'contacto_telefono', NEW.contacto_telefono), 
             CURRENT_USER());
 END //
 
@@ -87,7 +87,7 @@ BEGIN
     SET MESSAGE_TEXT = 'No se permite la eliminación física de personas. Use desactivación (esta_activo = FALSE)';
 END //
 
--- 6. trg_generar_asientos_vuelo
+-- 7. trg_generar_asientos_vuelo
 CREATE TRIGGER trg_generar_asientos_vuelo
 AFTER INSERT ON vuelos
 FOR EACH ROW

@@ -12,6 +12,7 @@ CREATE PROCEDURE sp_crear_reservacion(
 )
 BEGIN
     DECLARE v_pnr CHAR(6);
+    DECLARE v_existe INT DEFAULT 1;
     DECLARE EXIT HANDLER FOR SQLEXCEPTION 
     BEGIN
         ROLLBACK;
@@ -25,8 +26,10 @@ BEGIN
         ROLLBACK;
     ELSE
         -- Generar PNR aleatorio
-        SET v_pnr = SUBSTRING(MD5(RAND()), 1, 6);
-        SET v_pnr = UPPER(v_pnr);
+        WHILE v_existe > 0 DO
+            SET v_pnr = UPPER(SUBSTRING(MD5(RAND()), 1, 6));
+            SELECT COUNT(*) INTO v_existe FROM reservaciones WHERE codigo_pnr = v_pnr;
+        END WHILE;
         
         INSERT INTO reservaciones (codigo_pnr, contacto_email, contacto_telefono, usuario_creador_id)
         VALUES (v_pnr, p_contacto_email, p_contacto_telefono, p_usuario_id);
@@ -212,8 +215,8 @@ BEGIN
         SET p_resultado = 'ERROR: La reservación ya está cancelada.';
         ROLLBACK;
     ELSE
-        UPDATE boletos SET estado = 'CANCELADO' WHERE reservacion_id = p_reservacion_id;
         UPDATE asientos_vuelo SET estado = 'DISPONIBLE', boleto_id = NULL WHERE boleto_id IN (SELECT id FROM boletos WHERE reservacion_id = p_reservacion_id);
+        UPDATE boletos SET estado = 'CANCELADO' WHERE reservacion_id = p_reservacion_id;
         UPDATE reservaciones SET estado = 'CANCELADA' WHERE id = p_reservacion_id;
         
         SET p_resultado = 'EXITO: Reservación cancelada.';
