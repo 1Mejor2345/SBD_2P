@@ -1,0 +1,78 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>👨✈️ Asignación de Tripulación</h1>
+    {% if vuelo %}
+    <p>Vuelo <strong>{{ vuelo.numero_vuelo }}</strong> — {{ vuelo.ciudad_origen }} ({{ vuelo.origen_iata }}) → {{ vuelo.ciudad_destino }} ({{ vuelo.destino_iata }})</p>
+    {% endif %}
+</div>
+
+<div style="max-width: 900px; margin: 0 auto;">
+    <!-- Tripulación Actual -->
+    <div class="card">
+        <h3 style="margin-bottom: 1rem;">Tripulación Asignada ({{ tripulacion|length }})</h3>
+        {% if tripulacion %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr><th>Nombre</th><th>Cargo</th><th>Función en Vuelo</th><th>Acción</th></tr>
+                </thead>
+                <tbody>
+                    {% for t in tripulacion %}
+                    <tr>
+                        <td><strong>{{ t.nombres }} {{ t.apellidos }}</strong></td>
+                        <td><span class="badge badge-info">{{ t.cargo }}</span></td>
+                        <td><span class="badge badge-warning">{{ t.funcion }}</span></td>
+                        <td>
+                            <form method="POST" action="{{ url_for('eliminar_tripulante') }}" style="display: inline;"
+                                  onsubmit="return confirm('¿Remover este tripulante del vuelo?');">
+                                <input type="hidden" name="tripulacion_id" value="{{ t.id }}">
+                                <input type="hidden" name="vuelo_id" value="{{ vuelo.id }}">
+                                <button type="submit" class="btn btn-danger" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">❌ Remover</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted" style="text-align: center; padding: 1rem;">No hay tripulantes asignados aún.</p>
+        {% endif %}
+    </div>
+
+    <!-- Asignar Nuevo -->
+    {% if vuelo and vuelo.estado == 'PROGRAMADO' %}
+    <div class="card">
+        <h3 style="margin-bottom: 1rem;">Asignar Tripulante</h3>
+        <form method="POST">
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="empleado_id">Empleado</label>
+                    <select class="form-control" id="empleado_id" name="empleado_id" required>
+                        <option value="">Seleccione empleado</option>
+                        {% for e in empleados %}
+                        <option value="{{ e.persona_id }}">{{ e.nombres }} {{ e.apellidos }} — {{ e.cargo }} {% if e.numero_licencia %}({{ e.numero_licencia }}){% endif %}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="funcion">Función en el Vuelo</label>
+                    <select class="form-control" id="funcion" name="funcion" required>
+                        <option value="COMANDANTE">👨✈️ Comandante</option>
+                        <option value="PRIMER_OFICIAL">👨✈️ Primer Oficial</option>
+                        <option value="SOBRECARGO_JEFE">👩✈️ Sobrecargo Jefe</option>
+                        <option value="SOBRECARGO">👩✈️ Sobrecargo</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">➕ Asignar al Vuelo</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 1rem;">
+        <a href="{{ url_for('detalle_vuelo', id=vuelo.id if vuelo else 0) }}" class="btn btn-outline">← Volver al Vuelo</a>
+    </div>
+</div>
+{% endblock %}

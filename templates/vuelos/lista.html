@@ -1,0 +1,70 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1>✈️ Gestión de Vuelos</h1>
+            <p>Programación y control de vuelos</p>
+        </div>
+        <a href="{{ url_for('nuevo_vuelo') }}" class="btn btn-primary">➕ Programar Vuelo</a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card" style="padding: 1rem;">
+    <form method="GET" style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+        <label style="font-weight: 600;">Filtrar por estado:</label>
+        <a href="{{ url_for('lista_vuelos') }}" class="badge {{ 'badge-info' if not estado_filtro else '' }}" style="cursor: pointer; padding: 0.5rem 1rem;">Todos</a>
+        {% for est in ['PROGRAMADO', 'EMBARQUE', 'EN_VUELO', 'ATERRIZADO', 'ARRIBADO', 'CANCELADO', 'RETRASADO'] %}
+        <a href="{{ url_for('lista_vuelos', estado=est) }}" class="badge badge-{{ 'success' if est == 'PROGRAMADO' else 'warning' if est in ('EMBARQUE','RETRASADO') else 'info' if est in ('EN_VUELO','ATERRIZADO','ARRIBADO') else 'danger' }} {{ 'selected' if estado_filtro == est else '' }}" style="cursor: pointer; padding: 0.5rem 1rem;">
+            {{ est }}
+        </a>
+        {% endfor %}
+    </form>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Vuelo</th>
+                    <th>Ruta</th>
+                    <th>Avión</th>
+                    <th>Salida</th>
+                    <th>Llegada</th>
+                    <th>Pasajeros</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in vuelos %}
+                <tr>
+                    <td><strong>{{ v.numero_vuelo }}</strong></td>
+                    <td>
+                        <strong>{{ v.origen_iata }}</strong> → <strong>{{ v.destino_iata }}</strong>
+                        <br><small class="text-muted">{{ v.ciudad_origen }} → {{ v.ciudad_destino }}</small>
+                    </td>
+                    <td>{{ v.matricula }}<br><small class="text-muted">{{ v.modelo }}</small></td>
+                    <td>{{ v.fecha_hora_salida.strftime('%d/%m %H:%M') if v.fecha_hora_salida else 'N/A' }}</td>
+                    <td>{{ v.fecha_hora_llegada.strftime('%d/%m %H:%M') if v.fecha_hora_llegada else 'N/A' }}</td>
+                    <td><strong>{{ v.pasajeros }}</strong></td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if v.estado == 'PROGRAMADO' else 'warning' if v.estado in ('EMBARQUE','RETRASADO') else 'info' if v.estado in ('EN_VUELO','ATERRIZADO','ARRIBADO') else 'danger' }}">
+                            {{ v.estado }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('detalle_vuelo', id=v.id) }}" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Ver</a>
+                        <a href="{{ url_for('tripulacion_vuelo', id=v.id) }}" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">👨✈️ Crew</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay vuelos para mostrar.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>🎫 Nueva Reservación</h1>
+    <p>Complete los datos para crear la reservación</p>
+</div>
+
+<div style="max-width: 900px; margin: 0 auto;">
+    {% if vuelo %}
+    <!-- Resumen del vuelo seleccionado -->
+    <div class="card" style="border-left: 4px solid var(--accent);">
+        <h3 style="margin-bottom: 1rem;">✈️ Vuelo Seleccionado</h3>
+        <div class="flight-route-display" style="justify-content: flex-start; gap: 2rem;">
+            <div>
+                <strong>{{ vuelo.numero_vuelo }}</strong> — {{ vuelo.avion_modelo }}<br>
+                <span class="text-muted">{{ vuelo.fecha_hora_salida.strftime('%d/%m/%Y %H:%M') if vuelo.fecha_hora_salida else 'N/A' }}</span>
+            </div>
+            <div class="flight-endpoint">
+                <strong>{{ vuelo.ruta_id and vuelo.origen_iata or 'N/A' }}</strong>
+                <small>{{ vuelo.ciudad_origen or '' }}</small>
+            </div>
+            <div style="font-size: 1.5rem; color: var(--accent);">→</div>
+            <div class="flight-endpoint">
+                <strong>{{ vuelo.ruta_id and vuelo.destino_iata or 'N/A' }}</strong>
+                <small>{{ vuelo.ciudad_destino or '' }}</small>
+            </div>
+        </div>
+        {% if tarifa %}
+        <p style="margin-top: 0.5rem;"><span class="badge badge-info">Tarifa: {{ tarifa.nombre }}</span></p>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Formulario de Reservación -->
+    <div class="card">
+        <h3 style="margin-bottom: 1.5rem;">📝 Datos de la Reservación</h3>
+        <form method="POST" action="{{ url_for('nueva_reservacion') }}" id="reservacionForm">
+            <input type="hidden" name="vuelo_id" value="{{ request.args.get('vuelo_id', '') }}">
+            <input type="hidden" name="clase_servicio_id" value="{{ request.args.get('clase_id', 1) }}">
+            <input type="hidden" name="familia_tarifa_id" value="{{ request.args.get('tarifa_id', 1) }}">
+            <input type="hidden" name="precio" value="150.00">
+
+            <h4 style="color: var(--primary); margin-bottom: 1rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem;">Datos de Contacto</h4>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="email">📧 Email de Contacto</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="correo@ejemplo.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="telefono">📱 Teléfono de Contacto</label>
+                    <input type="tel" class="form-control" id="telefono" name="telefono" placeholder="+593 99 999 9999" required>
+                </div>
+            </div>
+
+            <h4 style="color: var(--primary); margin: 1.5rem 0 1rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem;">Datos del Pasajero</h4>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="tipo_documento">Tipo de Documento</label>
+                    <select class="form-control" id="tipo_documento" name="tipo_documento" required>
+                        <option value="CEDULA">Cédula</option>
+                        <option value="PASAPORTE">Pasaporte</option>
+                        <option value="RUC">RUC</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="numero_documento">Número de Documento</label>
+                    <input type="text" class="form-control" id="numero_documento" name="numero_documento" placeholder="1712345678" required>
+                </div>
+                <div class="form-group">
+                    <label for="nombres">Nombres</label>
+                    <input type="text" class="form-control" id="nombres" name="nombres" placeholder="Juan Carlos" required>
+                </div>
+                <div class="form-group">
+                    <label for="apellidos">Apellidos</label>
+                    <input type="text" class="form-control" id="apellidos" name="apellidos" placeholder="Pérez García" required>
+                </div>
+                <div class="form-group">
+                    <label for="pasajero_email">Email del Pasajero</label>
+                    <input type="email" class="form-control" id="pasajero_email" name="pasajero_email" placeholder="pasajero@email.com">
+                </div>
+                <div class="form-group">
+                    <label for="pasajero_telefono">Teléfono del Pasajero</label>
+                    <input type="tel" class="form-control" id="pasajero_telefono" name="pasajero_telefono" placeholder="+593 99 999 9999">
+                </div>
+                <div class="form-group">
+                    <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+                    <input type="date" class="form-control" id="fecha_nacimiento" name="fecha_nacimiento">
+                </div>
+                <div class="form-group">
+                    <label for="nacionalidad">Nacionalidad</label>
+                    <select class="form-control" id="nacionalidad" name="nacionalidad">
+                        {% for p in paises %}
+                        <option value="{{ p.codigo_iso }}" {{ 'selected' if p.codigo_iso == 'EC' }}>{{ p.nombre }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="genero">Género</label>
+                    <select class="form-control" id="genero" name="genero">
+                        <option value="M">Masculino</option>
+                        <option value="F">Femenino</option>
+                        <option value="OTRO">Otro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 2rem;">
+                <button type="submit" class="btn btn-primary" style="min-width: 250px; padding: 1rem;">
+                    ✅ Confirmar Reservación
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

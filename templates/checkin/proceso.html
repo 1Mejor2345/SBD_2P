@@ -1,0 +1,121 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>💺 Check-in — Selección de Asiento</h1>
+    <p>Seleccione su asiento en el avión</p>
+</div>
+
+{% if boleto %}
+<div style="max-width: 1000px; margin: 0 auto;">
+    <!-- Passenger Info -->
+    <div class="card" style="border-left: 4px solid var(--accent);">
+        <div class="grid-2" style="align-items: center;">
+            <div>
+                <h3>👤 {{ boleto.nombres }} {{ boleto.apellidos }}</h3>
+                <p class="text-muted">Doc: {{ boleto.numero_documento }} &nbsp;|&nbsp; Boleto: <code>{{ boleto.numero_boleto }}</code></p>
+            </div>
+            <div style="text-align: right;">
+                <strong>{{ boleto.numero_vuelo }}</strong><br>
+                <span>{{ boleto.origen_iata }} → {{ boleto.destino_iata }}</span><br>
+                <span class="text-muted">{{ boleto.fecha_hora_salida.strftime('%d/%m/%Y %H:%M') if boleto.fecha_hora_salida else '' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Seat Map -->
+    <div class="card">
+        <h3 style="margin-bottom: 1rem; text-align: center;">🛩️ Mapa de Asientos</h3>
+        
+        <!-- Legend -->
+        <div style="display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap;">
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="seat available" style="width: 25px; height: 25px; font-size: 0; cursor: default;"></div>
+                <span>Disponible</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="seat occupied" style="width: 25px; height: 25px; font-size: 0; cursor: default;"></div>
+                <span>Ocupado</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="seat selected" style="width: 25px; height: 25px; font-size: 0; cursor: default;"></div>
+                <span>Seleccionado</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <div class="seat business" style="width: 25px; height: 25px; font-size: 0; cursor: default; border: 2px solid var(--accent);"></div>
+                <span>Business</span>
+            </div>
+        </div>
+
+        <!-- Column Headers -->
+        <div class="seat-map">
+            <div class="seat-header">A</div>
+            <div class="seat-header">B</div>
+            <div class="seat-header">C</div>
+            <div class="seat-header aisle"></div>
+            <div class="seat-header">D</div>
+            <div class="seat-header">E</div>
+            <div class="seat-header">F</div>
+            
+            {% set current_row = [0] %}
+            {% for s in asientos %}
+                {% if s.columna == 'A' and s.fila != current_row[0] %}
+                    {% if current_row.append(s.fila) %}{% endif %}
+                {% endif %}
+                
+                <div class="seat {{ 'occupied' if s.estado == 'OCUPADO' else 'blocked' if s.estado == 'BLOQUEADO' else 'available' }} {{ 'emergency' if s.es_salida_emergencia else '' }}"
+                     data-seat-id="{{ s.id }}"
+                     data-seat-name="{{ s.nombre_asiento }}"
+                     data-status="{{ s.estado }}"
+                     onclick="{% if s.estado == 'DISPONIBLE' %}selectSeat(this, {{ s.id }}, '{{ s.nombre_asiento }}'){% endif %}"
+                     title="{{ s.nombre_asiento }} - {{ s.clase_servicio }} {{ '(Salida de emergencia)' if s.es_salida_emergencia else '' }}">
+                    {{ s.nombre_asiento }}
+                </div>
+                
+                {% if s.columna == 'C' %}
+                <div class="seat aisle">
+                    <small style="color: var(--text-muted);">{{ s.fila }}</small>
+                </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Confirm Form -->
+        <form method="POST" id="checkinForm" style="text-align: center; margin-top: 2rem;">
+            <input type="hidden" name="asiento_vuelo_id" id="asiento_vuelo_id" value="">
+            <div id="selectedSeatInfo" style="display: none; margin-bottom: 1rem;">
+                <span class="badge badge-success" style="font-size: 1.1rem; padding: 0.5rem 1rem;">
+                    Asiento seleccionado: <strong id="selectedSeatName"></strong>
+                </span>
+            </div>
+            <button type="submit" class="btn btn-primary" id="confirmBtn" style="min-width: 250px; padding: 1rem;" disabled>
+                ✅ Confirmar Check-in
+            </button>
+        </form>
+    </div>
+</div>
+
+<script>
+function selectSeat(element, seatId, seatName) {
+    // Deselect all
+    document.querySelectorAll('.seat.selected').forEach(s => {
+        s.classList.remove('selected');
+        s.classList.add('available');
+    });
+    // Select this one
+    element.classList.remove('available');
+    element.classList.add('selected');
+    // Update form
+    document.getElementById('asiento_vuelo_id').value = seatId;
+    document.getElementById('selectedSeatName').textContent = seatName;
+    document.getElementById('selectedSeatInfo').style.display = 'block';
+    document.getElementById('confirmBtn').disabled = false;
+}
+</script>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <div style="font-size: 4rem;">❓</div>
+    <h3>Boleto no encontrado</h3>
+    <a href="{{ url_for('buscar_checkin') }}" class="btn btn-primary" style="margin-top: 1rem;">Buscar Check-in</a>
+</div>
+{% endif %}
+{% endblock %}

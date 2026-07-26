@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-logo">✈️</div>
+            <h1>Pegaso Airlines</h1>
+            <p class="text-muted">Sistema de Gestión Aeronáutica</p>
+        </div>
+        <form method="POST" action="{{ url_for('login') }}" id="loginForm">
+            <div class="form-group">
+                <label for="username">Usuario</label>
+                <input type="text" class="form-control" id="username" name="username" placeholder="Ingrese su usuario" required autofocus>
+            </div>
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <input type="password" class="form-control" id="password" name="password" placeholder="Ingrese su contraseña" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
+                🔐 Iniciar Sesión
+            </button>
+        </form>
+        <div style="text-align: center; margin-top: 1.5rem; color: var(--text-muted); font-size: 0.85rem;">
+            <p>Credenciales de prueba:</p>
+            <p><strong>admin</strong> / admin &nbsp;|&nbsp; <strong>supervisor</strong> / supervisor &nbsp;|&nbsp; <strong>agente</strong> / agente</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>➕ Programar Nuevo Vuelo</h1>
+    <p>Complete los datos para programar un vuelo</p>
+</div>
+
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <form method="POST" id="nuevoVueloForm">
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="numero_vuelo">✈️ Número de Vuelo</label>
+                <input type="text" class="form-control" id="numero_vuelo" name="numero_vuelo" placeholder="PG-101" required>
+            </div>
+            <div class="form-group">
+                <label for="ruta_id">🗺️ Ruta</label>
+                <select class="form-control" id="ruta_id" name="ruta_id" required>
+                    <option value="">Seleccione ruta</option>
+                    {% for r in rutas %}
+                    <option value="{{ r.id }}">{{ r.ciudad_origen }} ({{ r.origen_iata }}) → {{ r.ciudad_destino }} ({{ r.destino_iata }}) — {{ r.distancia_km }}km</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="avion_matricula">🛩️ Avión</label>
+                <select class="form-control" id="avion_matricula" name="avion_matricula" required>
+                    <option value="">Seleccione avión</option>
+                    {% for a in aviones %}
+                    <option value="{{ a.matricula }}">{{ a.matricula }} — {{ a.fabricante }} {{ a.modelo }} ({{ a.capacidad_pasajeros }} pax)</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="puerta_embarque_id">🚪 Puerta de Embarque</label>
+                <select class="form-control" id="puerta_embarque_id" name="puerta_embarque_id">
+                    <option value="">Sin asignar</option>
+                    {% for p in puertas %}
+                    <option value="{{ p.id }}">{{ p.codigo_iata }} - Puerta {{ p.numero }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fecha_hora_salida">📅 Fecha/Hora Salida</label>
+                <input type="datetime-local" class="form-control" id="fecha_hora_salida" name="fecha_hora_salida" required>
+            </div>
+            <div class="form-group">
+                <label for="fecha_hora_llegada">📅 Fecha/Hora Llegada</label>
+                <input type="datetime-local" class="form-control" id="fecha_hora_llegada" name="fecha_hora_llegada" required>
+            </div>
+            <div class="form-group">
+                <label for="limite_sobreventa">📈 Límite Sobreventa</label>
+                <input type="number" class="form-control" id="limite_sobreventa" name="limite_sobreventa" min="0" max="30" value="5">
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="observaciones">📝 Observaciones</label>
+            <textarea class="form-control" id="observaciones" name="observaciones" rows="3" placeholder="Notas opcionales..."></textarea>
+        </div>
+        <div style="text-align: center; margin-top: 1rem;">
+            <button type="submit" class="btn btn-primary" style="min-width: 250px;">✅ Programar Vuelo</button>
+            <a href="{{ url_for('lista_vuelos') }}" class="btn btn-outline" style="margin-left: 1rem;">← Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

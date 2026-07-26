@@ -1,0 +1,141 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>Panel de Control</h1>
+    <p>Bienvenido, {{ session.get('user_name', 'Usuario') }} — <span class="badge badge-info">{{ session.get('user_role', 'Sin rol') }}</span></p>
+</div>
+
+<!-- Stat Cards -->
+<div class="grid-3" style="margin-bottom: 2rem;">
+    {% if session.get('user_role') in ['Agente', 'Administrador'] %}
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, var(--primary), var(--primary-light));">🎫</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.get('reservaciones_hoy', {}).get('c', 0) }}</span>
+            <span class="stat-label">Reservaciones Hoy</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, var(--warning), #E8B04B);">⏳</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.get('checkins_pendientes', {}).get('c', 0) }}</span>
+            <span class="stat-label">Check-ins Pendientes</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, var(--info), #4BA3C7);">🛫</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.get('vuelos_hoy', {}).get('c', 0) }}</span>
+            <span class="stat-label">Vuelos Hoy</span>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if session.get('user_role') in ['Supervisor', 'Administrador'] %}
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, var(--success), #3FA864);">✈️</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.get('vuelos_activos', {}).get('c', 0) }}</span>
+            <span class="stat-label">Vuelos Activos</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #6C5CE7, #A37CF0);">👨‍✈️</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.get('tripulantes_asignados', {}).get('c', 0) }}</span>
+            <span class="stat-label">Tripulantes en Servicio</span>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if session.get('user_role') == 'Administrador' %}
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, var(--accent), var(--accent-light));">🛩️</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.get('aviones_operativos', {}).get('c', 0) }}</span>
+            <span class="stat-label">Aviones Operativos</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #E17055, #F09474);">👥</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.get('empleados_activos', {}).get('c', 0) }}</span>
+            <span class="stat-label">Empleados Activos</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, #00B894, #55E6C1);">🗺️</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.get('total_rutas', {}).get('c', 0) }}</span>
+            <span class="stat-label">Rutas Activas</span>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Quick Actions -->
+<div class="card">
+    <h3 style="margin-bottom: 1rem;">⚡ Acciones Rápidas</h3>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        {% if session.get('user_role') in ['Agente', 'Administrador'] %}
+        <a href="{{ url_for('buscar_vuelos') }}" class="btn btn-primary">🔍 Buscar Vuelos</a>
+        <a href="{{ url_for('buscar_checkin') }}" class="btn btn-accent">📋 Check-in</a>
+        <a href="{{ url_for('lista_reservaciones') }}" class="btn btn-outline">🎫 Ver Reservaciones</a>
+        {% endif %}
+        {% if session.get('user_role') in ['Supervisor', 'Administrador'] %}
+        <a href="{{ url_for('nuevo_vuelo') }}" class="btn btn-primary">➕ Programar Vuelo</a>
+        <a href="{{ url_for('lista_vuelos') }}" class="btn btn-outline">📅 Ver Vuelos</a>
+        {% endif %}
+        {% if session.get('user_role') == 'Administrador' %}
+        <a href="{{ url_for('admin_aviones') }}" class="btn btn-outline">🛩️ Gestionar Flota</a>
+        <a href="{{ url_for('admin_empleados') }}" class="btn btn-outline">👥 Gestionar Personal</a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Próximos Vuelos -->
+{% if proximos_vuelos %}
+<div class="card" style="margin-top: 1rem;">
+    <h3 style="margin-bottom: 1rem;">🛫 Próximos Vuelos</h3>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Vuelo</th>
+                    <th>Ruta</th>
+                    <th>Salida</th>
+                    <th>Llegada</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in proximos_vuelos %}
+                <tr>
+                    <td><strong>{{ v.numero_vuelo }}</strong></td>
+                    <td>
+                        <span class="flight-route">
+                            <strong>{{ v.origen }}</strong>
+                            <span class="route-arrow">→</span>
+                            <strong>{{ v.destino }}</strong>
+                        </span>
+                        <br><small class="text-muted">{{ v.ciudad_origen }} → {{ v.ciudad_destino }}</small>
+                    </td>
+                    <td>{{ v.fecha_hora_salida.strftime('%d/%m %H:%M') if v.fecha_hora_salida else 'N/A' }}</td>
+                    <td>{{ v.fecha_hora_llegada.strftime('%d/%m %H:%M') if v.fecha_hora_llegada else 'N/A' }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if v.estado == 'PROGRAMADO' else 'warning' if v.estado == 'EMBARQUE' else 'info' if v.estado == 'EN_VUELO' else 'danger' if v.estado == 'CANCELADO' else 'default' }}">
+                            {{ v.estado }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('detalle_vuelo', id=v.id) }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Ver</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

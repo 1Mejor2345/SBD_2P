@@ -1,0 +1,59 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>👥 Pasajeros para Check-in</h1>
+    <p>Reservación: <strong style="letter-spacing: 2px;">{{ reservacion.codigo_pnr if reservacion else 'N/A' }}</strong></p>
+</div>
+
+<div class="card" style="max-width: 1000px; margin: 0 auto;">
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Pasajero</th>
+                    <th>Documento</th>
+                    <th>Vuelo</th>
+                    <th>Ruta</th>
+                    <th>Clase / Tarifa</th>
+                    <th>Asiento</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for b in boletos %}
+                <tr>
+                    <td><strong>{{ b.apellidos }}</strong>, {{ b.nombres }}</td>
+                    <td>{{ b.numero_documento }}</td>
+                    <td>{{ b.numero_vuelo }}</td>
+                    <td>{{ b.origen_iata }} → {{ b.destino_iata }}</td>
+                    <td><span class="badge badge-info">{{ b.clase }}</span> {{ b.tarifa }}</td>
+                    <td>{{ b.numero_asiento or '—' }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'warning' if b.estado == 'EMITIDO' else 'success' if b.estado == 'CHECKIN' else 'danger' }}">
+                            {{ b.estado }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if b.estado == 'EMITIDO' %}
+                        <a href="{{ url_for('proceso_checkin', boleto_id=b.id) }}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">💺 Check-in</a>
+                        {% elif b.estado == 'CHECKIN' %}
+                        <a href="{{ url_for('registrar_equipaje', boleto_id=b.id) }}" class="btn btn-accent" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">🧳 Equipaje</a>
+                        <a href="{{ url_for('pase_abordar', boleto_id=b.id) }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">🎫 Pase</a>
+                        {% else %}
+                        <span class="text-muted">Completado</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay boletos en esta reservación.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div style="text-align: center; margin-top: 1rem;">
+    <a href="{{ url_for('buscar_checkin') }}" class="btn btn-outline">← Volver a Búsqueda</a>
+</div>
+{% endblock %}

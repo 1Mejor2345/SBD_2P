@@ -1,0 +1,60 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>🔍 Buscar Vuelos</h1>
+    <p>Encuentre los mejores vuelos para su destino</p>
+</div>
+
+<div class="card search-card" style="max-width: 900px; margin: 0 auto;">
+    <form method="POST" action="{{ url_for('resultados_vuelos') }}" id="searchForm">
+        <div class="grid-2">
+            <div class="form-group">
+                <label for="origen">🛫 Origen</label>
+                <select name="origen" id="origen" class="form-control" required>
+                    <option value="">Seleccione aeropuerto de origen</option>
+                    {% for a in aeropuertos %}
+                    <option value="{{ a.codigo_iata }}">{{ a.ciudad }} ({{ a.codigo_iata }}) — {{ a.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="destino">🛬 Destino</label>
+                <select name="destino" id="destino" class="form-control" required>
+                    <option value="">Seleccione aeropuerto de destino</option>
+                    {% for a in aeropuertos %}
+                    <option value="{{ a.codigo_iata }}">{{ a.ciudad }} ({{ a.codigo_iata }}) — {{ a.nombre }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="fecha">📅 Fecha de Salida</label>
+                <input type="date" name="fecha" id="fecha" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="pasajeros">👥 Pasajeros</label>
+                <input type="number" name="pasajeros" id="pasajeros" min="1" max="9" class="form-control" value="1" required>
+            </div>
+        </div>
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary" style="min-width: 250px; padding: 1rem 2rem; font-size: 1.1rem;">
+                ✈️ Buscar Vuelos Disponibles
+            </button>
+        </div>
+    </form>
+</div>
+
+<div class="card" style="max-width: 900px; margin: 2rem auto; text-align: center; opacity: 0.7;">
+    <h3>🌎 Destinos Populares</h3>
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1rem;">
+        <span class="badge badge-info" style="font-size: 1rem; padding: 0.5rem 1rem;">UIO → GYE</span>
+        <span class="badge badge-info" style="font-size: 1rem; padding: 0.5rem 1rem;">UIO → BOG</span>
+        <span class="badge badge-info" style="font-size: 1rem; padding: 0.5rem 1rem;">GYE → MIA</span>
+        <span class="badge badge-info" style="font-size: 1rem; padding: 0.5rem 1rem;">UIO → LIM</span>
+        <span class="badge badge-info" style="font-size: 1rem; padding: 0.5rem 1rem;">UIO → CUE</span>
+    </div>
+</div>
+
+<script>
+document.getElementById('fecha').min = new Date().toISOString().split('T')[0];
+</script>
+{% endblock %}

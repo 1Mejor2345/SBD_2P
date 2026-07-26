@@ -1,0 +1,95 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>📋 Detalle de Reservación</h1>
+    <p>Información completa del PNR</p>
+</div>
+
+{% if reservacion %}
+<div style="max-width: 1000px; margin: 0 auto;">
+    <!-- PNR Header -->
+    <div class="card" style="border-left: 4px solid var(--accent); text-align: center;">
+        <div style="font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 2px;">Código de Reservación (PNR)</div>
+        <div style="font-size: 2.5rem; font-weight: 800; color: var(--primary); letter-spacing: 8px; margin: 0.5rem 0;">{{ reservacion.codigo_pnr }}</div>
+        <span class="badge badge-{{ 'success' if reservacion.estado == 'CONFIRMADA' else 'warning' if reservacion.estado == 'PENDIENTE' else 'danger' if reservacion.estado == 'CANCELADA' else 'info' }}" style="font-size: 1rem; padding: 0.5rem 1rem;">
+            {{ reservacion.estado }}
+        </span>
+        <div style="margin-top: 1rem; color: var(--text-light);">
+            <span>📧 {{ reservacion.contacto_email }}</span> &nbsp;|&nbsp;
+            <span>📱 {{ reservacion.contacto_telefono }}</span> &nbsp;|&nbsp;
+            <span>📅 {{ reservacion.fecha_creacion.strftime('%d/%m/%Y %H:%M') if reservacion.fecha_creacion else 'N/A' }}</span>
+        </div>
+    </div>
+
+    <!-- Boletos -->
+    <div class="card">
+        <h3 style="margin-bottom: 1rem;">🎫 Boletos Emitidos ({{ boletos|length }})</h3>
+        {% if boletos %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Boleto</th>
+                        <th>Pasajero</th>
+                        <th>Vuelo</th>
+                        <th>Ruta</th>
+                        <th>Salida</th>
+                        <th>Asiento</th>
+                        <th>Clase / Tarifa</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for b in boletos %}
+                    <tr>
+                        <td><code>{{ b.numero_boleto }}</code></td>
+                        <td><strong>{{ b.apellidos }}</strong>, {{ b.nombres }}<br><small class="text-muted">{{ b.numero_documento }}</small></td>
+                        <td><strong>{{ b.numero_vuelo }}</strong></td>
+                        <td>{{ b.origen_iata }} → {{ b.destino_iata }}</td>
+                        <td>{{ b.fecha_hora_salida.strftime('%d/%m %H:%M') if b.fecha_hora_salida else 'N/A' }}</td>
+                        <td>{{ b.numero_asiento or '—' }}</td>
+                        <td><span class="badge badge-info">{{ b.clase }}</span> {{ b.tarifa }}</td>
+                        <td><strong>${{ "%.2f"|format(b.precio) }}</strong></td>
+                        <td>
+                            <span class="badge badge-{{ 'warning' if b.estado == 'EMITIDO' else 'success' if b.estado in ('CHECKIN','ABORDADO','COMPLETADO') else 'danger' }}">
+                                {{ b.estado }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if b.estado == 'EMITIDO' %}
+                            <a href="{{ url_for('proceso_checkin', boleto_id=b.id) }}" class="btn btn-accent" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Check-in</a>
+                            {% elif b.estado == 'CHECKIN' %}
+                            <a href="{{ url_for('registrar_equipaje', boleto_id=b.id) }}" class="btn btn-outline" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Equipaje</a>
+                            <a href="{{ url_for('pase_abordar', boleto_id=b.id) }}" class="btn btn-primary" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">Pase</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No hay boletos emitidos para esta reservación.</p>
+        {% endif %}
+    </div>
+
+    <!-- Acciones -->
+    {% if reservacion.estado not in ('CANCELADA', 'COMPLETADA') %}
+    <div class="card" style="display: flex; gap: 1rem; justify-content: center;">
+        <form method="POST" action="{{ url_for('cancelar_reservacion', id=reservacion.id) }}" style="display: inline;"
+              onsubmit="return confirm('¿Está seguro de cancelar esta reservación? Esta acción no se puede deshacer.');">
+            <button type="submit" class="btn btn-danger">❌ Cancelar Reservación</button>
+        </form>
+    </div>
+    {% endif %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <div style="font-size: 4rem;">❓</div>
+    <h3>Reservación no encontrada</h3>
+    <a href="{{ url_for('lista_reservaciones') }}" class="btn btn-primary" style="margin-top: 1rem;">Ver Reservaciones</a>
+</div>
+{% endif %}
+{% endblock %}

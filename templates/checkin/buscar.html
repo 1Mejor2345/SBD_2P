@@ -1,0 +1,64 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>📝 Check-in</h1>
+    <p>Busque su reservación para realizar el check-in</p>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="POST" id="checkinSearchForm">
+        <div class="form-group">
+            <label>Tipo de búsqueda</label>
+            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="radio" name="tipo_busqueda" value="pnr" checked> Código PNR
+                </label>
+                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                    <input type="radio" name="tipo_busqueda" value="apellido"> Apellido
+                </label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="busqueda">🔍 Buscar</label>
+            <input type="text" class="form-control" id="busqueda" name="busqueda" placeholder="Ingrese PNR o apellido" required autofocus>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">🔍 Buscar Reservación</button>
+    </form>
+</div>
+
+{% if resultados is not none %}
+<div class="card" style="max-width: 800px; margin: 2rem auto;">
+    <h3 style="margin-bottom: 1rem;">Resultados</h3>
+    {% if resultados %}
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>PNR</th>
+                    <th>Vuelo</th>
+                    <th>Ruta</th>
+                    <th>Salida</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in resultados %}
+                <tr>
+                    <td><strong style="letter-spacing: 2px;">{{ r.codigo_pnr }}</strong></td>
+                    <td>{{ r.numero_vuelo }}</td>
+                    <td>{{ r.origen }} → {{ r.destino }}</td>
+                    <td>{{ r.fecha_hora_salida.strftime('%d/%m/%Y %H:%M') if r.fecha_hora_salida else 'N/A' }}</td>
+                    <td><span class="badge badge-{{ 'success' if r.estado == 'CONFIRMADA' else 'warning' }}">{{ r.estado }}</span></td>
+                    <td><a href="{{ url_for('pasajeros_checkin', reservacion_id=r.id) }}" class="btn btn-accent" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;">Seleccionar</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="text-align: center; color: var(--text-muted); padding: 2rem;">No se encontraron reservaciones.</p>
+    {% endif %}
+</div>
+{% endif %}
+{% endblock %}

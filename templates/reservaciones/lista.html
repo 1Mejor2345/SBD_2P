@@ -1,0 +1,55 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1>🎫 Reservaciones</h1>
+            <p>Listado de todas las reservaciones</p>
+        </div>
+        <a href="{{ url_for('buscar_vuelos') }}" class="btn btn-primary">➕ Nueva Reservación</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>PNR</th>
+                    <th>Fecha</th>
+                    <th>Rutas</th>
+                    <th>Boletos</th>
+                    <th>Contacto</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reservaciones %}
+                <tr>
+                    <td><strong style="letter-spacing: 2px; color: var(--primary);">{{ r.codigo_pnr }}</strong></td>
+                    <td>{{ r.fecha_creacion.strftime('%d/%m/%Y %H:%M') if r.fecha_creacion else 'N/A' }}</td>
+                    <td>{{ r.rutas or '—' }}</td>
+                    <td><span class="badge badge-info">{{ r.num_boletos }}</span></td>
+                    <td><small>{{ r.contacto_email }}</small></td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if r.estado == 'CONFIRMADA' else 'warning' if r.estado == 'PENDIENTE' else 'danger' if r.estado == 'CANCELADA' else 'info' }}">
+                            {{ r.estado }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('detalle_reservacion', id=r.id) }}" class="btn btn-outline" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;">Ver Detalle</a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                        No hay reservaciones registradas. <a href="{{ url_for('buscar_vuelos') }}">Crear una nueva</a>.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1>🛩️ Gestión de Flota</h1>
+            <p>Aeronaves registradas en Pegaso Airlines</p>
+        </div>
+        <a href="{{ url_for('nuevo_avion') }}" class="btn btn-primary">➕ Registrar Avión</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Matrícula</th>
+                    <th>Fabricante</th>
+                    <th>Modelo</th>
+                    <th>Capacidad</th>
+                    <th>Año</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in aviones %}
+                <tr>
+                    <td><strong>{{ a.matricula }}</strong></td>
+                    <td>{{ a.fabricante }}</td>
+                    <td>{{ a.modelo }}</td>
+                    <td>{{ a.capacidad_pasajeros }} pax</td>
+                    <td>{{ a.anio_fabricacion }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if a.estado == 'OPERATIVO' else 'warning' if a.estado == 'EN_MANTENIMIENTO' else 'danger' }}">
+                            {{ a.estado }}
+                        </span>
+                    </td>
+                    <td>
+                        <form method="POST" action="{{ url_for('cambiar_estado_avion') }}" style="display: inline;">
+                            <input type="hidden" name="matricula" value="{{ a.matricula }}">
+                            <select name="estado" class="form-control" style="width: auto; display: inline; padding: 0.3rem;" onchange="this.form.submit()">
+                                <option value="" disabled selected>Cambiar...</option>
+                                <option value="OPERATIVO">✅ Operativo</option>
+                                <option value="EN_MANTENIMIENTO">🔧 Mantenimiento</option>
+                                <option value="RETIRADO">❌ Retirado</option>
+                            </select>
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay aviones registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

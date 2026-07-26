@@ -1,0 +1,150 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>✈️ Detalle de Vuelo</h1>
+</div>
+
+{% if vuelo %}
+<div style="max-width: 1100px; margin: 0 auto;">
+    <!-- Flight Header -->
+    <div class="card" style="border-left: 4px solid var(--primary);">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div>
+                <h2 style="margin: 0;">{{ vuelo.numero_vuelo }}</h2>
+                <p class="text-muted">{{ vuelo.fabricante }} {{ vuelo.modelo }} — {{ vuelo.matricula }}</p>
+            </div>
+            <div style="text-align: center;">
+                <div class="flight-route-display" style="gap: 1.5rem;">
+                    <div class="flight-endpoint">
+                        <strong class="flight-iata">{{ vuelo.origen_iata }}</strong>
+                        <small>{{ vuelo.ciudad_origen }}</small>
+                        <span>{{ vuelo.fecha_hora_salida.strftime('%H:%M') if vuelo.fecha_hora_salida else '' }}</span>
+                    </div>
+                    <div class="flight-duration">
+                        <div class="flight-line"><span class="dot"></span><span class="line"></span><span class="dot"></span></div>
+                        <small>{{ vuelo.distancia_km }} km</small>
+                    </div>
+                    <div class="flight-endpoint">
+                        <strong class="flight-iata">{{ vuelo.destino_iata }}</strong>
+                        <small>{{ vuelo.ciudad_destino }}</small>
+                        <span>{{ vuelo.fecha_hora_llegada.strftime('%H:%M') if vuelo.fecha_hora_llegada else '' }}</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <span class="badge badge-{{ 'success' if vuelo.estado == 'PROGRAMADO' else 'warning' if vuelo.estado in ('EMBARQUE','RETRASADO') else 'info' if vuelo.estado in ('EN_VUELO','ATERRIZADO','ARRIBADO') else 'danger' }}" style="font-size: 1rem; padding: 0.5rem 1rem;">
+                    {{ vuelo.estado }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Change Status -->
+        {% if vuelo.estado not in ('ARRIBADO', 'CANCELADO') %}
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border); display: flex; gap: 1rem; align-items: center;">
+            <form method="POST" action="{{ url_for('cambiar_estado_vuelo', id=vuelo.id) }}" style="display: flex; gap: 0.5rem; align-items: center;">
+                <label style="font-weight: 600;">Cambiar estado:</label>
+                <select name="estado" class="form-control" style="width: auto;">
+                    {% for est in ['PROGRAMADO', 'EMBARQUE', 'EN_VUELO', 'ATERRIZADO', 'ARRIBADO', 'CANCELADO', 'RETRASADO'] %}
+                    <option value="{{ est }}">{{ est }}</option>
+                    {% endfor %}
+                </select>
+                <input type="text" name="observaciones" class="form-control" placeholder="Observaciones" style="width: 200px;">
+                <button type="submit" class="btn btn-accent">Actualizar</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="grid-2">
+        <!-- Tripulación -->
+        <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <h3>👨✈️ Tripulación ({{ tripulacion|length }})</h3>
+                <a href="{{ url_for('tripulacion_vuelo', id=vuelo.id) }}" class="btn btn-outline" style="padding: 0.3rem 0.8rem; font-size: 0.85rem;">Gestionar</a>
+            </div>
+            {% if tripulacion %}
+            <table>
+                <thead><tr><th>Nombre</th><th>Función</th><th>Licencia</th></tr></thead>
+                <tbody>
+                    {% for t in tripulacion %}
+                    <tr>
+                        <td>{{ t.nombres }} {{ t.apellidos }}</td>
+                        <td><span class="badge badge-info">{{ t.funcion }}</span></td>
+                        <td>{{ t.numero_licencia or '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="text-muted" style="text-align: center;">Sin tripulación asignada</p>
+            {% endif %}
+        </div>
+
+        <!-- Stats -->
+        <div class="card">
+            <h3 style="margin-bottom: 1rem;">📊 Estadísticas</h3>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="stat-card" style="margin: 0;">
+                    <div class="stat-info">
+                        <span class="stat-value">{{ pasajeros|length }}</span>
+                        <span class="stat-label">Pasajeros</span>
+                    </div>
+                </div>
+                <div class="stat-card" style="margin: 0;">
+                    <div class="stat-info">
+                        <span class="stat-value">{{ vuelo.capacidad_pasajeros }}</span>
+                        <span class="stat-label">Capacidad</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manifiesto de Pasajeros -->
+    <div class="card">
+        <h3 style="margin-bottom: 1rem;">📝 Manifiesto de Pasajeros</h3>
+        {% if pasajeros %}
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Boleto</th>
+                        <th>Pasajero</th>
+                        <th>Documento</th>
+                        <th>Asiento</th>
+                        <th>Clase</th>
+                        <th>Tarifa</th>
+                        <th>Equipajes</th>
+                        <th>Precio</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in pasajeros %}
+                    <tr>
+                        <td><code>{{ p.numero_boleto }}</code></td>
+                        <td><strong>{{ p.apellidos }}</strong>, {{ p.nombres }}</td>
+                        <td>{{ p.numero_documento }}</td>
+                        <td>{{ p.numero_asiento or '—' }}</td>
+                        <td><span class="badge badge-info">{{ p.clase }}</span></td>
+                        <td>{{ p.tarifa }}</td>
+                        <td>{{ p.equipajes }} 🧳</td>
+                        <td>${{ "%.2f"|format(p.precio) }}</td>
+                        <td><span class="badge badge-{{ 'warning' if p.estado == 'EMITIDO' else 'success' if p.estado in ('CHECKIN','ABORDADO') else 'danger' }}">{{ p.estado }}</span></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted" style="text-align: center; padding: 2rem;">No hay pasajeros registrados para este vuelo.</p>
+        {% endif %}
+    </div>
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <div style="font-size: 4rem;">❓</div>
+    <h3>Vuelo no encontrado</h3>
+</div>
+{% endif %}
+{% endblock %}

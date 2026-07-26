@@ -1,0 +1,104 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>🎫 Pase de Abordar</h1>
+    <p>Boarding Pass — Pegaso Airlines</p>
+</div>
+
+{% if pase %}
+<div style="max-width: 700px; margin: 0 auto;">
+    <div class="boarding-pass">
+        <div class="bp-header">
+            <div class="bp-airline">
+                <span style="font-size: 1.5rem;">✈️</span>
+                <strong>PEGASO AIRLINES</strong>
+            </div>
+            <span class="badge badge-success" style="font-size: 0.9rem;">BOARDING PASS</span>
+        </div>
+
+        <div class="bp-body">
+            <div class="bp-main">
+                <div class="bp-passenger">
+                    <span class="bp-label">PASAJERO / PASSENGER</span>
+                    <span class="bp-value">{{ pase.apellidos|upper }}/{{ pase.nombres|upper }}</span>
+                </div>
+
+                <div class="bp-route">
+                    <div class="bp-airport">
+                        <span class="bp-iata">{{ pase.origen_iata }}</span>
+                        <span class="bp-city">{{ pase.ciudad_origen }}</span>
+                    </div>
+                    <div class="bp-arrow">
+                        <div class="flight-line" style="margin: 0;">
+                            <span class="dot"></span>
+                            <span class="line"></span>
+                            <span class="dot"></span>
+                        </div>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">{{ pase.numero_vuelo }}</span>
+                    </div>
+                    <div class="bp-airport">
+                        <span class="bp-iata">{{ pase.destino_iata }}</span>
+                        <span class="bp-city">{{ pase.ciudad_destino }}</span>
+                    </div>
+                </div>
+
+                <div class="bp-details">
+                    <div class="bp-detail">
+                        <span class="bp-label">FECHA / DATE</span>
+                        <span class="bp-value">{{ pase.fecha_hora_salida.strftime('%d %b %Y') if pase.fecha_hora_salida else 'N/A' }}</span>
+                    </div>
+                    <div class="bp-detail">
+                        <span class="bp-label">HORA / TIME</span>
+                        <span class="bp-value">{{ pase.fecha_hora_salida.strftime('%H:%M') if pase.fecha_hora_salida else 'N/A' }}</span>
+                    </div>
+                    <div class="bp-detail">
+                        <span class="bp-label">ASIENTO / SEAT</span>
+                        <span class="bp-value" style="font-size: 1.8rem; color: var(--primary);">{{ pase.numero_asiento or 'N/A' }}</span>
+                    </div>
+                    <div class="bp-detail">
+                        <span class="bp-label">PUERTA / GATE</span>
+                        <span class="bp-value">{{ pase.puerta_num or pase.puerta or 'TBD' }}</span>
+                    </div>
+                    <div class="bp-detail">
+                        <span class="bp-label">CLASE / CLASS</span>
+                        <span class="bp-value">{{ pase.clase }}</span>
+                    </div>
+                    <div class="bp-detail">
+                        <span class="bp-label">SECUENCIA / SEQ</span>
+                        <span class="bp-value">{{ '%03d'|format(pase.secuencia_embarque or 0) }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barcode -->
+            <div class="bp-barcode">
+                <div class="barcode-visual">
+                    {% for i in range(40) %}
+                    <div style="width: {{ [2,3,1,4,2,1,3,2,1,2][i % 10] }}px; height: 50px; background: #1A1A2E;"></div>
+                    {% endfor %}
+                </div>
+                <small style="color: var(--text-muted); letter-spacing: 3px;">{{ pase.codigo_barras[:20] if pase.codigo_barras else '' }}</small>
+            </div>
+        </div>
+
+        <div class="bp-footer">
+            <small>Documento: {{ pase.numero_documento }}</small>
+            <small>Boleto: {{ pase.numero_boleto }}</small>
+        </div>
+    </div>
+
+    <div style="text-align: center; margin-top: 2rem;">
+        <button onclick="window.print()" class="btn btn-primary">🖨️ Imprimir Pase</button>
+        <a href="{{ url_for('registrar_equipaje', boleto_id=pase.boleto_id) }}" class="btn btn-accent">🧳 Registrar Equipaje</a>
+        <a href="{{ url_for('buscar_checkin') }}" class="btn btn-outline">← Volver</a>
+    </div>
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <div style="font-size: 4rem;">❓</div>
+    <h3>Pase de abordar no encontrado</h3>
+    <p class="text-muted">El pasajero aún no ha realizado el check-in.</p>
+    <a href="{{ url_for('buscar_checkin') }}" class="btn btn-primary" style="margin-top: 1rem;">Buscar Check-in</a>
+</div>
+{% endif %}
+{% endblock %}

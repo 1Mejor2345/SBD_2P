@@ -1,0 +1,82 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>🧳 Registro de Equipaje</h1>
+    <p>Registre las piezas de equipaje del pasajero</p>
+</div>
+
+{% if boleto %}
+<div style="max-width: 800px; margin: 0 auto;">
+    <div class="card" style="border-left: 4px solid var(--accent);">
+        <div class="grid-2">
+            <div>
+                <h4>👤 {{ boleto.nombres }} {{ boleto.apellidos }}</h4>
+                <p class="text-muted">Vuelo: {{ boleto.numero_vuelo }} &nbsp;|&nbsp; {{ boleto.origen_iata }} → {{ boleto.destino_iata }}</p>
+            </div>
+            <div style="text-align: right;">
+                <span class="badge badge-info">Tarifa: {{ boleto.tarifa }}</span>
+                <p class="text-muted" style="margin-top: 0.5rem;">
+                    Equipaje incluido: {{ '✅ Sí' if boleto.incluye_equipaje_bodega else '❌ No' }}
+                    {% if boleto.incluye_equipaje_bodega %} ({{ boleto.peso_equipaje_incluido_kg|int }}kg){% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-bottom: 1rem;">Registrar Nueva Pieza</h3>
+        <form method="POST">
+            <div class="grid-2">
+                <div class="form-group">
+                    <label for="peso_kg">⚖️ Peso (kg)</label>
+                    <input type="number" class="form-control" id="peso_kg" name="peso_kg" step="0.1" min="0.1" max="50" placeholder="23.0" required>
+                </div>
+                <div class="form-group">
+                    <label for="tipo">Tipo de Equipaje</label>
+                    <select class="form-control" id="tipo" name="tipo" required>
+                        <option value="BODEGA">🧳 Bodega (máx. 50kg)</option>
+                        <option value="CABINA">🎒 Cabina (máx. 10kg)</option>
+                    </select>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Registrar Equipaje</button>
+        </form>
+    </div>
+
+    {% if equipajes %}
+    <div class="card">
+        <h3 style="margin-bottom: 1rem;">Equipajes Registrados ({{ equipajes|length }})</h3>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Tag IATA</th>
+                        <th>Tipo</th>
+                        <th>Peso</th>
+                        <th>Estado</th>
+                        <th>Registro</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in equipajes %}
+                    <tr>
+                        <td><code style="letter-spacing: 2px;">{{ e.numero_tag }}</code></td>
+                        <td><span class="badge badge-{{ 'info' if e.tipo == 'BODEGA' else 'warning' }}">{{ e.tipo }}</span></td>
+                        <td><strong>{{ e.peso_kg }} kg</strong></td>
+                        <td><span class="badge badge-{{ 'success' if e.estado_tracking == 'REGISTRADO' else 'info' }}">{{ e.estado_tracking }}</span></td>
+                        <td>{{ e.fecha_registro.strftime('%d/%m %H:%M') if e.fecha_registro else 'N/A' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <div style="text-align: center; margin-top: 1rem;">
+        <a href="{{ url_for('pase_abordar', boleto_id=boleto.id) }}" class="btn btn-accent">🎫 Ver Pase de Abordar</a>
+        <a href="{{ url_for('buscar_checkin') }}" class="btn btn-outline">← Volver</a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

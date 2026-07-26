@@ -1,0 +1,80 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>✈️ Vuelos Disponibles</h1>
+    <p>{{ origen }} → {{ destino }} — {{ fecha }} — {{ pasajeros }} pasajero(s)</p>
+</div>
+
+{% if vuelos %}
+<div style="max-width: 1000px; margin: 0 auto;">
+    {% for v in vuelos %}
+    <div class="card flight-card" style="margin-bottom: 1.5rem;">
+        <div class="flight-card-header">
+            <div class="flight-info">
+                <span class="flight-number">{{ v.numero_vuelo }}</span>
+                <span class="text-muted" style="font-size: 0.85rem;">{{ v.avion_modelo }}</span>
+            </div>
+            <div class="flight-route-display">
+                <div class="flight-endpoint">
+                    <span class="flight-time">{{ v.fecha_hora_salida.strftime('%H:%M') if v.fecha_hora_salida else 'N/A' }}</span>
+                    <strong class="flight-iata">{{ v.origen_iata }}</strong>
+                    <small>{{ v.ciudad_origen }}</small>
+                </div>
+                <div class="flight-duration">
+                    <span>{{ v.duracion_estimada_min // 60 }}h {{ v.duracion_estimada_min % 60 }}m</span>
+                    <div class="flight-line">
+                        <span class="dot"></span>
+                        <span class="line"></span>
+                        <span class="dot"></span>
+                    </div>
+                    <small>Directo</small>
+                </div>
+                <div class="flight-endpoint">
+                    <span class="flight-time">{{ v.fecha_hora_llegada.strftime('%H:%M') if v.fecha_hora_llegada else 'N/A' }}</span>
+                    <strong class="flight-iata">{{ v.destino_iata }}</strong>
+                    <small>{{ v.ciudad_destino }}</small>
+                </div>
+            </div>
+            <div class="flight-seats">
+                <span class="text-muted">Disponibles:</span>
+                <strong style="color: {{ 'var(--success)' if (v.capacidad_pasajeros - v.boletos_vendidos) > 20 else 'var(--warning)' if (v.capacidad_pasajeros - v.boletos_vendidos) > 5 else 'var(--danger)' }}">
+                    {{ v.capacidad_pasajeros - v.boletos_vendidos }} asientos
+                </strong>
+            </div>
+        </div>
+
+        <!-- Tarifas -->
+        <div class="fare-grid">
+            {% for t in tarifas %}
+            <div class="fare-option">
+                <h4>{{ t.nombre }}</h4>
+                <ul class="fare-features">
+                    <li>{{ '✅' if t.incluye_equipaje_bodega else '❌' }} Equipaje bodega{% if t.incluye_equipaje_bodega %} ({{ t.peso_equipaje_incluido_kg|int }}kg){% endif %}</li>
+                    <li>{{ '✅' if t.incluye_seleccion_asiento else '❌' }} Selección asiento</li>
+                    <li>{{ '✅' if t.permite_cambios else '❌' }} Cambios</li>
+                    <li>{{ '✅' if t.es_reembolsable else '❌' }} Reembolsable</li>
+                    {% if t.prioridad_embarque %}<li>✅ Prioridad embarque</li>{% endif %}
+                </ul>
+                <div class="fare-price">
+                    {% set base_price = 85.00 %}
+                    {% set clase = clases[0] if clases else None %}
+                    ${{ "%.2f"|format(base_price * (loop.index * 0.8 + 0.5)) }}
+                </div>
+                <a href="{{ url_for('nueva_reservacion', vuelo_id=v.id, tarifa_id=t.id, clase_id=1) }}" class="btn btn-{{ 'primary' if loop.index == 2 else 'outline' }}" style="width: 100%;">
+                    Seleccionar
+                </a>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="card" style="text-align: center; padding: 3rem;">
+    <div style="font-size: 4rem; margin-bottom: 1rem;">🔍</div>
+    <h3>No se encontraron vuelos</h3>
+    <p class="text-muted">No hay vuelos disponibles para la ruta y fecha seleccionadas.</p>
+    <a href="{{ url_for('buscar_vuelos') }}" class="btn btn-primary" style="margin-top: 1rem;">Buscar Nuevamente</a>
+</div>
+{% endif %}
+{% endblock %}

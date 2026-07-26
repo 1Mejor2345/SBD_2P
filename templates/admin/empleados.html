@@ -1,0 +1,45 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1>👥 Gestión de Personal</h1>
+            <p>Empleados de Pegaso Airlines</p>
+        </div>
+        <a href="{{ url_for('nuevo_empleado') }}" class="btn btn-primary">➕ Registrar Empleado</a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nombre</th>
+                    <th>Documento</th>
+                    <th>Cargo</th>
+                    <th>Licencia</th>
+                    <th>Contratación</th>
+                    <th>Estado</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in empleados %}
+                <tr>
+                    <td><strong>{{ e.codigo_empleado }}</strong></td>
+                    <td>{{ e.nombres }} {{ e.apellidos }}</td>
+                    <td>{{ e.numero_documento }}</td>
+                    <td><span class="badge badge-info">{{ e.cargo }}</span></td>
+                    <td>{{ e.numero_licencia or '—' }}</td>
+                    <td>{{ e.fecha_contratacion.strftime('%d/%m/%Y') if e.fecha_contratacion else 'N/A' }}</td>
+                    <td><span class="badge badge-{{ 'success' if e.esta_activo else 'danger' }}">{{ 'ACTIVO' if e.esta_activo else 'INACTIVO' }}</span></td>
+                </tr>
+                {% else %}
+                <tr><td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">No hay empleados registrados.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

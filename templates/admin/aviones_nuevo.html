@@ -1,0 +1,34 @@
+{% extends 'layout.html' %}
+{% block content %}
+<div class="page-header">
+    <h1>➕ Registrar Avión</h1>
+    <p>Agregar una nueva aeronave a la flota</p>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto;">
+    <form method="POST">
+        <div class="form-group">
+            <label for="matricula">✈️ Matrícula</label>
+            <input type="text" class="form-control" id="matricula" name="matricula" placeholder="HC-CXV" required>
+            <small class="text-muted">Formato ecuatoriano: HC-XXX</small>
+        </div>
+        <div class="form-group">
+            <label for="modelo_id">🛩️ Modelo de Avión</label>
+            <select class="form-control" id="modelo_id" name="modelo_id" required>
+                <option value="">Seleccione modelo</option>
+                {% for m in modelos %}
+                <option value="{{ m.id }}">{{ m.fabricante }} {{ m.modelo }} ({{ m.capacidad_pasajeros }} pax)</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="anio_fabricacion">📅 Año de Fabricación</label>
+            <input type="number" class="form-control" id="anio_fabricacion" name="anio_fabricacion" min="1990" max="2026" value="2020" required>
+        </div>
+        <div style="text-align: center; margin-top: 1.5rem;">
+            <button type="submit" class="btn btn-primary">✅ Registrar Avión</button>
+            <a href="{{ url_for('admin_aviones') }}" class="btn btn-outline" style="margin-left: 1rem;">← Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
