@@ -89,7 +89,7 @@ img {
 
 /* 3. NAVBAR */
 .navbar {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: var(--primary-dark); 
   color: white;
   padding: 1rem 2rem;
   position: sticky;
@@ -98,91 +98,53 @@ img {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1); 
 }
 
-.navbar-brand {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: white;
+.nav-brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
 }
 
-.navbar-brand:hover {
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+}
+
+.nav-links a:not(.btn) {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0.5rem 0;
+  position: relative;
+  transition: color 0.2s ease;
+}
+
+.nav-links a:not(.btn):hover {
   color: var(--accent);
 }
 
-.navbar-nav {
-  display: flex;
-  gap: 1.5rem;
-  list-style: none;
-}
-
-.nav-link {
-  color: rgba(255, 255, 255, 0.85);
-  font-weight: 500;
-  padding: 0.5rem 0;
-  position: relative;
-}
-
-.nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: var(--accent);
-  transition: width var(--transition-normal);
-}
-
-.nav-link:hover {
-  color: white;
-}
-
-.nav-link:hover::after, .nav-link.active::after {
-  width: 100%;
-}
-
-.user-menu {
+.nav-user {
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-left: 1rem;
 }
 
-/* 4. LAYOUT */
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
-  flex: 1;
+.nav-user .btn.btn-accent {
+  background-color: var(--accent);
+  color: #111827 !important; 
+  border: none;
+  box-shadow: none;
+  background-image: none; 
+  font-weight: 700;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
 }
 
-.container-fluid {
-  width: 100%;
-  padding: 2rem;
-  flex: 1;
-}
-
-.layout-sidebar {
-  display: grid;
-  grid-template-columns: 250px 1fr;
-  gap: 2rem;
-  min-height: calc(100vh - 70px);
-}
-
-.sidebar {
-  background: var(--bg-card);
-  border-right: 1px solid var(--border);
-  padding: 1.5rem 0;
-  box-shadow: var(--shadow-sm);
+.nav-user .btn.btn-accent:hover {
+  filter: brightness(0.9);
 }
 
 /* 5. CARDS (Glassmorphism & Hover Effects) */
