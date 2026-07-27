@@ -1,28 +1,62 @@
 {% extends 'layout.html' %}
 {% block content %}
-<div class="login-wrapper">
-    <div class="login-card">
-        <div class="login-header">
-            <div class="login-logo">✈️</div>
-            <h1>Pegaso Airlines</h1>
-            <p class="text-muted">Sistema de Gestión Aeronáutica</p>
-        </div>
-        <form method="POST" action="{{ url_for('login') }}" id="loginForm">
-            <div class="form-group">
-                <label for="username">Usuario</label>
-                <input type="text" class="form-control" id="username" name="username" placeholder="Ingrese su usuario" required autofocus>
+
+<style>
+    /* Aplicar la imagen de fondo solo a esta página */
+    body {
+        /* Usamos url_for de Flask para buscar la imagen en la carpeta static */
+        background-image: url("{{ url_for('static', filename='fondo-avion.jpg') }}");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+        background-repeat: no-repeat;
+        
+        /* Capa oscura superpuesta para que la tarjeta de login resalte */
+        background-color: rgba(9, 30, 50, 0.7); /* Usa tu color --primary-dark con opacidad */
+        background-blend-mode: overlay;
+    }
+</style>
+
+<div class="container d-flex align-items-center justify-content-center" style="min-height: 80vh;">
+    <!-- Contenedor principal usando tu sistema de tarjetas -->
+    <div class="card" style="width: 100%; max-width: 420px;">
+        <div class="card-body">
+            
+            <!-- Encabezado del Login -->
+            <div class="text-center mb-4">
+                <div style="font-size: 3.5rem; margin-bottom: 0.5rem;" class="animate-pulse">✈️</div>
+                <h1 class="card-title text-primary mb-1">Pegaso Airlines</h1>
+                <p class="text-muted">Sistema de Gestión Aeronáutica</p>
             </div>
-            <div class="form-group">
-                <label for="password">Contraseña</label>
-                <input type="password" class="form-control" id="password" name="password" placeholder="Ingrese su contraseña" required>
+            
+            <!-- Formulario usando tus clases form-group y form-control -->
+            <form method="POST" action="{{ url_for('login') }}" id="loginForm">
+                <div class="form-group">
+                    <label for="username" class="form-label">Usuario</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="Ingrese su usuario" required autofocus>
+                </div>
+                
+                <div class="form-group mb-4">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <input type="password" class="form-control" id="password" name="password" placeholder="Ingrese su contraseña" required>
+                </div>
+                
+                <!-- Botón primario que ocupa el 100% del ancho -->
+                <button type="submit" class="btn btn-primary w-100 mt-2">
+                    🔐 Iniciar Sesión
+                </button>
+            </form>
+            
+            <!-- Sección de credenciales usando tus badges -->
+            <div class="text-center mt-4" style="border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <p class="text-muted mb-2" style="font-size: 0.85rem;">Credenciales de prueba:</p>
+                <div class="d-flex justify-content-center gap-2" style="flex-wrap: wrap;">
+                    <span class="badge badge-dark" style="text-transform: lowercase;">admin / admin</span>
+                    <span class="badge badge-primary" style="text-transform: lowercase;">supervisor / supervisor</span>
+                    <span class="badge badge-info" style="text-transform: lowercase;">agente / agente</span>
+                </div>
             </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;">
-                🔐 Iniciar Sesión
-            </button>
-        </form>
-        <div style="text-align: center; margin-top: 1.5rem; color: var(--text-muted); font-size: 0.85rem;">
-            <p>Credenciales de prueba:</p>
-            <p><strong>admin</strong> / admin &nbsp;|&nbsp; <strong>supervisor</strong> / supervisor &nbsp;|&nbsp; <strong>agente</strong> / agente</p>
+            
         </div>
     </div>
 </div>
