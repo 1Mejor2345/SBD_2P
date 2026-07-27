@@ -89,7 +89,7 @@ img {
 
 /* 3. NAVBAR */
 .navbar {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  background: var(--primary-dark) !important;
   color: white;
   padding: 1rem 2rem;
   position: sticky;
@@ -98,62 +98,71 @@ img {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: var(--shadow-md);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: none !important;
+  backdrop-filter: none !important;
 }
 
-.navbar-brand {
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: white;
+.navbar .navbar-brand {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  letter-spacing: 1px;
-  text-transform: uppercase;
+  color: white;
+  text-decoration: none;
 }
 
-.navbar-brand:hover {
+.navbar .navbar-brand:hover {
   color: var(--accent);
 }
 
-.navbar-nav {
+.navbar .nav-links {
   display: flex;
   gap: 1.5rem;
+  align-items: center;
   list-style: none;
+  margin: 0;
+  padding: 0;
 }
 
-.nav-link {
-  color: rgba(255, 255, 255, 0.85);
+.navbar .nav-links a:not(.btn) {
+  color: rgba(255, 255, 255, 0.9);
   font-weight: 500;
+  text-decoration: none;
   padding: 0.5rem 0;
-  position: relative;
+  transition: color 0.2s ease;
 }
 
-.nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 0;
-  height: 2px;
-  background-color: var(--accent);
-  transition: width var(--transition-normal);
+.navbar .nav-links a:not(.btn):hover {
+  color: var(--accent) !important;
 }
 
-.nav-link:hover {
-  color: white;
+.navbar .nav-links a.active:not(.btn) {
+  color: var(--accent) !important; 
+  font-weight: 700 !important; 
 }
 
-.nav-link:hover::after, .nav-link.active::after {
-  width: 100%;
-}
-
-.user-menu {
+.navbar .nav-user {
   display: flex;
   align-items: center;
   gap: 1rem;
+  margin-left: 1rem;
+}
+
+.navbar .nav-user .btn-accent {
+  background-color: var(--accent) !important;
+  color: #111827 !important;
+  border: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+  font-weight: 700 !important;
+  border-radius: 4px !important;
+  padding: 0.4rem 1rem !important;
+  font-size: 0.85rem !important;
+  text-decoration: none !important;
+}
+
+.navbar .nav-user .btn-accent:hover {
+  filter: brightness(0.9) !important;
+  transform: none !important;
 }
 
 /* 4. LAYOUT */
