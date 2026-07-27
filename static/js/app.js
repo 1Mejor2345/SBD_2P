@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const observer = new IntersectionObserver(entries => {
             entries.forEach((entry, index) => {
                 if (entry.isIntersecting) {
-                    entry.target.style.animation = `fadeInUp 0.5s ease ${index * 0.1}s forwards`;
+                    entry.target.style.animation = `slideInUp 0.5s ease ${index * 0.1}s forwards`;
                     observer.unobserve(entry.target);
                 }
             });
