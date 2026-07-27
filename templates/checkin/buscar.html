@@ -5,26 +5,74 @@
     <p>Busque su reservación para realizar el check-in</p>
 </div>
 
-<div class="card" style="max-width: 600px; margin: 0 auto;">
+<div class="card" style="max-width: 600px; margin: 0 auto; padding: 2rem;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <div style="font-size: 3rem; margin-bottom: 0.5rem;">✈️</div>
+        <h2 style="color: var(--primary);">Encuentra tu vuelo</h2>
+        <p class="text-muted">Ingresa los datos para realizar tu check-in</p>
+    </div>
+
     <form method="POST" id="checkinSearchForm">
-        <div class="form-group">
-            <label>Tipo de búsqueda</label>
-            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                    <input type="radio" name="tipo_busqueda" value="pnr" checked> Código PNR
-                </label>
-                <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
-                    <input type="radio" name="tipo_busqueda" value="apellido"> Apellido
-                </label>
-            </div>
+        <!-- Selector de tipo de búsqueda con botones grandes -->
+        <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; justify-content: center;">
+            
+            <label style="flex: 1; text-align: center; padding: 1rem; border: 2px solid var(--primary); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s;" id="label_pnr">
+                <input type="radio" name="tipo_busqueda" value="pnr" checked style="display: none;" onchange="cambiarEstiloBuscador()">
+                <strong style="font-size: 1.1rem;">🎫 Código PNR</strong>
+            </label>
+            
+            <label style="flex: 1; text-align: center; padding: 1rem; border: 2px solid var(--border); border-radius: var(--radius-md); cursor: pointer; transition: all 0.3s; color: var(--text-muted);" id="label_apellido">
+                <input type="radio" name="tipo_busqueda" value="apellido" style="display: none;" onchange="cambiarEstiloBuscador()">
+                <strong style="font-size: 1.1rem;">👤 Apellido</strong>
+            </label>
+
         </div>
-        <div class="form-group">
-            <label for="busqueda">🔍 Buscar</label>
-            <input type="text" class="form-control" id="busqueda" name="busqueda" placeholder="Ingrese PNR o apellido" required autofocus>
+
+        <!-- Campo de texto principal -->
+        <div class="form-group" style="margin-bottom: 2rem;">
+            <label for="busqueda" style="font-weight: 600; color: var(--primary);">🔍 Ingrese el dato de búsqueda</label>
+            <input type="text" class="form-control" id="busqueda" name="busqueda" placeholder="Ej: ABC123" required autofocus style="font-size: 1.2rem; padding: 1rem; text-align: center; text-transform: uppercase; letter-spacing: 2px;">
         </div>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">🔍 Buscar Reservación</button>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; padding: 1rem; font-size: 1.1rem;">
+            Buscar Reservación
+        </button>
     </form>
 </div>
+
+<!-- Script simple para cambiar los colores interactivos -->
+<script>
+function cambiarEstiloBuscador() {
+    const radioPnr = document.querySelector('input[value="pnr"]').checked;
+    const labelPnr = document.getElementById('label_pnr');
+    const labelApellido = document.getElementById('label_apellido');
+    const inputBusqueda = document.getElementById('busqueda');
+
+    if (radioPnr) {
+        // Estilo cuando PNR está seleccionado
+        labelPnr.style.borderColor = 'var(--primary)';
+        labelPnr.style.color = 'var(--text)';
+        
+        labelApellido.style.borderColor = 'var(--border)';
+        labelApellido.style.color = 'var(--text-muted)';
+        
+        inputBusqueda.placeholder = "Ej: ABC123";
+        inputBusqueda.style.textTransform = "uppercase";
+        inputBusqueda.style.letterSpacing = "2px";
+    } else {
+        // Estilo cuando Apellido está seleccionado
+        labelApellido.style.borderColor = 'var(--primary)';
+        labelApellido.style.color = 'var(--text)';
+        
+        labelPnr.style.borderColor = 'var(--border)';
+        labelPnr.style.color = 'var(--text-muted)';
+        
+        inputBusqueda.placeholder = "Ej: Pérez";
+        inputBusqueda.style.textTransform = "none";
+        inputBusqueda.style.letterSpacing = "normal";
+    }
+}
+</script>
 
 {% if resultados is not none %}
 <div class="card" style="max-width: 800px; margin: 2rem auto;">

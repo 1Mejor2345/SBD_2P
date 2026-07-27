@@ -5,6 +5,28 @@
     <p>Bienvenido, {{ session.get('user_name', 'Usuario') }} — <span class="badge badge-info">{{ session.get('user_role', 'Sin rol') }}</span></p>
 </div>
 
+<!-- Quick Actions (Movido al inicio con espacio extra) -->
+<div class="card" style="margin-top: 1rem; margin-bottom: 2.5rem;">
+    <h3 style="margin-bottom: 1rem;">⚡ Acciones Rápidas</h3>
+    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        {% if session.get('user_role') in ['Agente', 'Administrador'] %}
+        <a href="{{ url_for('buscar_vuelos') }}" class="btn btn-primary">🔍 Buscar Vuelos</a>
+        <a href="{{ url_for('buscar_checkin') }}" class="btn btn-accent">📋 Check-in</a>
+        <a href="{{ url_for('lista_reservaciones') }}" class="btn btn-outline">🎫 Ver Reservaciones</a>
+        {% endif %}
+        
+        {% if session.get('user_role') in ['Supervisor', 'Administrador'] %}
+        <a href="{{ url_for('nuevo_vuelo') }}" class="btn btn-primary">➕ Programar Vuelo</a>
+        <a href="{{ url_for('lista_vuelos') }}" class="btn btn-outline">📅 Ver Vuelos</a>
+        {% endif %}
+        
+        {% if session.get('user_role') == 'Administrador' %}
+        <a href="{{ url_for('admin_aviones') }}" class="btn btn-outline">🛩️ Gestionar Flota</a>
+        <a href="{{ url_for('admin_empleados') }}" class="btn btn-outline">👥 Gestionar Personal</a>
+        {% endif %}
+    </div>
+</div>
+
 <!-- Stat Cards -->
 <div class="grid-3" style="margin-bottom: 0px !important; margin-top: 0px !important;">
     {% if session.get('user_role') in ['Agente', 'Administrador'] %}
@@ -73,25 +95,6 @@
     {% endif %}
 </div>
 
-<!-- Quick Actions -->
-<div class="card">
-    <h3 style="margin-bottom: 1rem;">⚡ Acciones Rápidas</h3>
-    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
-        {% if session.get('user_role') in ['Agente', 'Administrador'] %}
-        <a href="{{ url_for('buscar_vuelos') }}" class="btn btn-primary">🔍 Buscar Vuelos</a>
-        <a href="{{ url_for('buscar_checkin') }}" class="btn btn-accent">📋 Check-in</a>
-        <a href="{{ url_for('lista_reservaciones') }}" class="btn btn-outline">🎫 Ver Reservaciones</a>
-        {% endif %}
-        {% if session.get('user_role') in ['Supervisor', 'Administrador'] %}
-        <a href="{{ url_for('nuevo_vuelo') }}" class="btn btn-primary">➕ Programar Vuelo</a>
-        <a href="{{ url_for('lista_vuelos') }}" class="btn btn-outline">📅 Ver Vuelos</a>
-        {% endif %}
-        {% if session.get('user_role') == 'Administrador' %}
-        <a href="{{ url_for('admin_aviones') }}" class="btn btn-outline">🛩️ Gestionar Flota</a>
-        <a href="{{ url_for('admin_empleados') }}" class="btn btn-outline">👥 Gestionar Personal</a>
-        {% endif %}
-    </div>
-</div>
 
 <!-- Próximos Vuelos -->
 {% if proximos_vuelos %}
