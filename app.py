@@ -876,6 +876,8 @@ def nuevo_empleado():
             (tipo_doc, num_doc), fetchone=True
         )
         
+        # Comentario prueba
+
         if persona:
             codigo = request.form.get('codigo_empleado')
             cargo = request.form.get('cargo')
