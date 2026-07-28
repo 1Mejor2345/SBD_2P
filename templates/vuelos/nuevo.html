@@ -8,16 +8,14 @@
 <div class="card" style="max-width: 800px; margin: 0 auto;">
     <form method="POST" id="nuevoVueloForm">
         <div class="grid-2">
-            <div class="form-group">
-                <label for="numero_vuelo">✈️ Número de Vuelo</label>
-                <input type="text" class="form-control" id="numero_vuelo" name="numero_vuelo" placeholder="PG-101" required>
-            </div>
-            <div class="form-group">
-                <label for="ruta_id">🗺️ Ruta</label>
+            <div class="form-group" style="grid-column: span 2;">
+                <label for="ruta_id">🗺️ Ruta (Incluye Vuelo y Horario)</label>
                 <select class="form-control" id="ruta_id" name="ruta_id" required>
                     <option value="">Seleccione ruta</option>
                     {% for r in rutas %}
-                    <option value="{{ r.id }}">{{ r.ciudad_origen }} ({{ r.origen_iata }}) → {{ r.ciudad_destino }} ({{ r.destino_iata }}) — {{ r.distancia_km }}km</option>
+                    <option value="{{ r.id }}">
+                        {{ r.codigo_vuelo }} | {{ r.ciudad_origen }} ({{ r.origen_iata }}) → {{ r.ciudad_destino }} ({{ r.destino_iata }}) | 🕓 Salida: {{ r.hora_salida }}
+                    </option>
                     {% endfor %}
                 </select>
             </div>
@@ -40,12 +38,8 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="fecha_hora_salida">📅 Fecha/Hora Salida</label>
-                <input type="datetime-local" class="form-control" id="fecha_hora_salida" name="fecha_hora_salida" required>
-            </div>
-            <div class="form-group">
-                <label for="fecha_hora_llegada">📅 Fecha/Hora Llegada</label>
-                <input type="datetime-local" class="form-control" id="fecha_hora_llegada" name="fecha_hora_llegada" required>
+                <label for="fecha_vuelo">📅 Día del Vuelo</label>
+                <input type="date" class="form-control" id="fecha_vuelo" name="fecha_vuelo" required>
             </div>
             <div class="form-group">
                 <label for="limite_sobreventa">📈 Límite Sobreventa</label>

@@ -1,0 +1,81 @@
+======================================================
+GUÍA DE PRESENTACIÓN EN VIVO - MIÉRCOLES (GRUPO 6)
+======================================================
+Esta guía está diseñada para una exposición SECUENCIAL.
+Demostrarán TODO el ciclo de vida del sistema, pasando por
+cada uno de los roles (Admin, Supervisor, Viajero, Agente).
+
+- Estudiante A: Manejará el navegador web (Frontend).
+- Estudiante B: Manejará MySQL Workbench (Backend).
+
+PREPARACIÓN PREVIA:
+1. Workbench: Ejecutar los 6 scripts en la carpeta 'database' EN ORDEN.
+2. VS Code: Ejecutar `python app.py`. Abrir http://127.0.0.1:5000.
+3. Script 07: Tener abierto `07_pegaso_pruebas.sql` en Workbench.
+4. OJO: Las contraseñas son iguales a los usuarios (admin/admin, viajero/viajero, etc).
+
+------------------------------------------------------
+PASO 1: EL ADMINISTRADOR (Visión Global)
+------------------------------------------------------
+OBJETIVO: Mostrar que existe seguridad por roles y estadísticas globales.
+
+Estudiante A (Web):
+1. Inicia sesión como "admin" / "admin".
+2. Muestra el Dashboard. Explica: "El administrador tiene una vista global. Puede ver aviones operativos, empleados activos y rutas totales. Además tiene acceso a todos los módulos en la barra de navegación."
+3. Cierra sesión.
+
+------------------------------------------------------
+PASO 2: EL SUPERVISOR (Programación de Vuelos y Rutas)
+------------------------------------------------------
+OBJETIVO: Demostrar que dominan el concepto Ruta vs Vuelo exigido por la profesora.
+
+Estudiante A (Web):
+1. Inicia sesión como "supervisor" / "supervisor".
+2. Ve al menú "Vuelos" y haz clic en "+ Programar Vuelo".
+3. Dile a la profesora: "Tal como usted recomendó, nosotros no digitamos ni el número de vuelo ni la hora de salida. La Ruta ya es dueña de esa información".
+4. Muestra cómo al seleccionar la Ruta, ya sale "PG101 | Quito -> Guayaquil | Salida: 10:00:00". Selecciona esa ruta.
+5. Selecciona el "Día del Vuelo" (ej: 15 de Octubre 2026) y un Avión. Dale a Guardar.
+
+Estudiante B (Workbench):
+1. Ejecuta la consulta "PRUEBA 1A" (SELECT * FROM rutas). Explica: "Aquí puede ver que en la base de datos la tabla RUTAS contiene el codigo_vuelo y la hora_salida."
+2. Ejecuta la consulta "PRUEBA 1B" (SELECT * FROM vuelos). Explica: "Y aquí demostramos que los vuelos son simplemente instancias de esa ruta en diferentes días. El vuelo es la ruta con el día."
+3. Ejecuta la consulta "PRUEBA 2" para mostrarle que el vuelo del 15 de Octubre que crearon recién en la web, ya está guardado.
+
+------------------------------------------------------
+PASO 3: EL VIAJERO (Búsqueda y Compra)
+------------------------------------------------------
+OBJETIVO: Mostrar un dashboard limpio, UX amigable y autocompletado desde BD.
+
+Estudiante A (Web):
+1. Cierra sesión y entra como "viajero" / "viajero".
+2. Muestra el Dashboard: "A diferencia del Admin, el viajero solo ve sus propios boletos y no tiene opciones administrativas."
+3. Haz clic en "Buscar Vuelos".
+4. Muestra la "Búsqueda rápida por Ruta Maestra", elige PG101. Pon fecha 30/07/2026 y busca.
+5. En los resultados, muestra cómo las tarifas (precios/clases) están ocultas bajo el botón "Ver Tarifas ▼" para tener una interfaz amigable. Haz clic y selecciona una.
+6. ¡Momento Mágico!: En "Número de Documento" pon tu cédula (0943969386) y presiona la lupa. Demuestra cómo el sistema autocompleta todos tus datos (Nombre, fecha, etc.).
+7. Confirma la Reservación. ¡Anota el código PNR que sale en verde!
+
+Estudiante B (Workbench):
+1. Ejecuta la "PRUEBA 3" (SELECT * FROM personas...) para demostrarle cómo es que la base de datos ya tenía guardados los datos del pasajero frecuente.
+2. Ejecuta la "PRUEBA 4" (SELECT * FROM reservaciones). Muestra cómo la reserva se insertó correctamente junto con los boletos generados.
+
+------------------------------------------------------
+PASO 4: EL AGENTE (Check-in y Restricciones)
+------------------------------------------------------
+OBJETIVO: Demostrar validaciones (no overbooking) y Soft-Delete.
+
+Estudiante A (Web):
+1. Cierra sesión y entra como "agente" / "agente".
+2. Ve al menú "Check-in".
+3. Ingresa el código PNR que anotaste en el PASO 3.
+4. Se abrirá el mapa de asientos. Selecciona un asiento "Disponible" y dale a "Confirmar Check-in". Muestra la confirmación.
+
+Estudiante B (Workbench):
+1. Muestra en la base de datos (con un SELECT a `asientos_vuelo`) cómo el estado del asiento cambió a OCUPADO en tiempo real.
+2. Explícale a la miss: "La tabla tiene un CONSTRAINT UNIQUE que bloquea estrictamente cualquier intento de sobreventa o asiento duplicado directamente desde el motor de MySQL."
+
+Estudiante A (Web - Opcional, para cerrar):
+1. Ve a "Vuelos" y cambia el estado del vuelo a "CANCELADO".
+2. Explica que en la Base de Datos usan Eliminación Lógica (Soft-Delete) cambiando el estado en lugar de hacer DELETE, manteniendo el historial intacto.
+
+¡FIN DE LA PRESENTACIÓN! Con este flujo muestran un sistema completo, validado y 100% alineado a las correcciones.

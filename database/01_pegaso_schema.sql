@@ -71,12 +71,14 @@ CREATE TABLE configuracion_asientos (
 -- 8. rutas
 CREATE TABLE rutas (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    codigo_vuelo VARCHAR(10) NOT NULL UNIQUE,
     origen_iata CHAR(3),
     destino_iata CHAR(3),
+    hora_salida TIME NOT NULL,
     distancia_km INT NOT NULL CHECK (distancia_km > 0),
     duracion_estimada_min INT NOT NULL CHECK (duracion_estimada_min > 0),
     esta_activa BOOLEAN DEFAULT TRUE,
-    CONSTRAINT uq_rutas UNIQUE (origen_iata, destino_iata),
+    CONSTRAINT uq_rutas UNIQUE (origen_iata, destino_iata, hora_salida),
     CONSTRAINT fk_rutas_origen FOREIGN KEY (origen_iata) REFERENCES aeropuertos(codigo_iata) ON UPDATE CASCADE ON DELETE RESTRICT,
     CONSTRAINT fk_rutas_destino FOREIGN KEY (destino_iata) REFERENCES aeropuertos(codigo_iata) ON UPDATE CASCADE ON DELETE RESTRICT
 ) ENGINE=InnoDB;
@@ -156,8 +158,8 @@ CREATE TABLE familias_tarifa (
 -- 15. vuelos
 CREATE TABLE vuelos (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    numero_vuelo VARCHAR(10) NOT NULL,
     ruta_id INT,
+    fecha_vuelo DATE NOT NULL,
     avion_matricula VARCHAR(10),
     fecha_hora_salida DATETIME NOT NULL,
     fecha_hora_llegada DATETIME NOT NULL,

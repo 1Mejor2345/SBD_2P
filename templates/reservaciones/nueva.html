@@ -64,7 +64,11 @@
                 </div>
                 <div class="form-group">
                     <label for="numero_documento">Número de Documento</label>
-                    <input type="text" class="form-control" id="numero_documento" name="numero_documento" placeholder="1712345678" required>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <input type="text" class="form-control" id="numero_documento" name="numero_documento" placeholder="1712345678" required>
+                        <button type="button" class="btn btn-outline" onclick="buscarPersona()" title="Autocompletar datos si ya existe">🔍</button>
+                    </div>
+                    <small id="doc-status" style="color: var(--primary); display: none; margin-top: 0.2rem;">Datos cargados automáticamente.</small>
                 </div>
                 <div class="form-group">
                     <label for="nombres">Nombres</label>
@@ -112,4 +116,43 @@
         </form>
     </div>
 </div>
+
+<script>
+function buscarPersona() {
+    const numDoc = document.getElementById('numero_documento').value.trim();
+    if (!numDoc) return;
+    
+    fetch('/api/persona/' + numDoc)
+        .then(response => {
+            if (response.ok) return response.json();
+            throw new Error('No encontrado');
+        })
+        .then(data => {
+            document.getElementById('tipo_documento').value = data.tipo_documento || 'CEDULA';
+            document.getElementById('nombres').value = data.nombres || '';
+            document.getElementById('apellidos').value = data.apellidos || '';
+            document.getElementById('pasajero_email').value = data.email || '';
+            document.getElementById('pasajero_telefono').value = data.telefono || '';
+            document.getElementById('fecha_nacimiento').value = data.fecha_nacimiento || '';
+            document.getElementById('nacionalidad').value = data.nacionalidad || 'EC';
+            document.getElementById('genero').value = data.genero || 'M';
+            
+            const status = document.getElementById('doc-status');
+            status.style.display = 'block';
+            status.style.color = 'var(--success)';
+            status.innerText = '✅ ¡Pasajero frecuente encontrado!';
+            setTimeout(() => status.style.display = 'none', 3000);
+        })
+        .catch(err => {
+            const status = document.getElementById('doc-status');
+            status.style.display = 'block';
+            status.style.color = 'var(--warning)';
+            status.innerText = 'Pasajero nuevo. Por favor, llene sus datos.';
+            setTimeout(() => status.style.display = 'none', 3000);
+        });
+}
+
+// Opcional: que busque al salir del input
+document.getElementById('numero_documento').addEventListener('blur', buscarPersona);
+</script>
 {% endblock %}

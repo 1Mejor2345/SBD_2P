@@ -8,6 +8,19 @@
 <div class="card search-card" style="max-width: 900px; margin: 0 auto;">
     <form method="POST" action="{{ url_for('resultados_vuelos') }}" id="searchForm">
         <div class="grid-2">
+            <div class="form-group" style="grid-column: 1 / -1; margin-bottom: 1rem;">
+                <label for="ruta_rapida" style="color: var(--primary);">🚀 Búsqueda rápida por Ruta Maestra (Opcional)</label>
+                <select id="ruta_rapida" class="form-control" onchange="seleccionarRuta(this)">
+                    <option value="">-- Seleccione una Ruta para autocompletar --</option>
+                    {% for r in rutas %}
+                    <option value="{{ r.codigo_vuelo }}" data-origen="{{ r.origen_iata }}" data-destino="{{ r.destino_iata }}">
+                        Ruta {{ r.codigo_vuelo }} (Hora: {{ r.hora_salida }}) : {{ r.ciudad_origen }} → {{ r.ciudad_destino }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted" style="display:block; margin-top:0.3rem;">Si conoce la ruta frecuente que desea tomar, selecciónela para llenar origen y destino automáticamente.</small>
+            </div>
+            
             <div class="form-group">
                 <label for="origen">🛫 Origen</label>
                 <select name="origen" id="origen" class="form-control" required>
@@ -56,5 +69,15 @@
 
 <script>
 document.getElementById('fecha').min = new Date().toISOString().split('T')[0];
+
+function seleccionarRuta(select) {
+    if(!select.value) return;
+    const option = select.options[select.selectedIndex];
+    const origen = option.getAttribute('data-origen');
+    const destino = option.getAttribute('data-destino');
+    
+    if (origen) document.getElementById('origen').value = origen;
+    if (destino) document.getElementById('destino').value = destino;
+}
 </script>
 {% endblock %}

@@ -23,8 +23,11 @@
         <div class="nav-links">
             <a href="{{ url_for('dashboard') }}" id="nav-dashboard">🏠 Dashboard</a>
             
-            {% if session.get('user_role') in ['Agente', 'Administrador', 'Supervisor'] %}
+            {% if session.get('user_role') in ['Agente', 'Administrador', 'Supervisor', 'Viajero'] %}
             <a href="{{ url_for('buscar_vuelos') }}" id="nav-reservaciones">🎫 Reservaciones</a>
+            {% endif %}
+            
+            {% if session.get('user_role') in ['Agente', 'Administrador'] %}
             <a href="{{ url_for('buscar_checkin') }}" id="nav-checkin">📋 Check-in</a>
             {% endif %}
             
@@ -37,6 +40,7 @@
             <a href="{{ url_for('admin_empleados') }}" id="nav-personal">👥 Personal</a>
             {% endif %}
             
+            <div id="reloj-tiempo-real" style="color: var(--text-muted); font-size: 0.85rem; font-weight: 500; margin-right: 15px; display: flex; align-items: center;"></div>
             <div class="nav-user">
                 <span style="color: var(--accent); font-weight: 600;">{{ session.get('user_name', 'Usuario') }}</span>
                 <span class="badge" style="background: rgba(255,255,255,0.15); color: white; font-size: 0.7rem;">{{ session.get('user_role') }}</span>
@@ -70,6 +74,17 @@
     </footer>
     {% endif %}
 
+    <script>
+        function updateClock() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('es-ES', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute:'2-digit', second:'2-digit' });
+            const clockEl = document.getElementById('reloj-tiempo-real');
+            if(clockEl) clockEl.innerText = `${dateStr} | ${timeStr}`;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+    </script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 </html>

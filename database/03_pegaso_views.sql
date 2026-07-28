@@ -4,7 +4,7 @@ USE pegaso_airlines;
 CREATE OR REPLACE VIEW vw_itinerario_vuelos AS
 SELECT 
     v.id AS vuelo_id,
-    v.numero_vuelo,
+    r.codigo_vuelo AS numero_vuelo,
     co.nombre AS ciudad_origen,
     cd.nombre AS ciudad_destino,
     v.avion_matricula,
@@ -29,7 +29,7 @@ LEFT JOIN puertas_embarque pe ON v.puerta_embarque_id = pe.id;
 CREATE OR REPLACE VIEW vw_manifiesto_pasajeros AS
 SELECT 
     v.id AS vuelo_id,
-    v.numero_vuelo,
+    r.codigo_vuelo AS numero_vuelo,
     p.nombres,
     p.apellidos,
     p.tipo_documento,
@@ -40,6 +40,7 @@ SELECT
     (SELECT COUNT(*) FROM equipajes e WHERE e.boleto_id = b.id) AS cantidad_equipajes
 FROM boletos b
 JOIN vuelos v ON b.vuelo_id = v.id
+JOIN rutas r ON v.ruta_id = r.id
 JOIN personas p ON b.pasajero_id = p.id
 WHERE b.estado NOT IN ('CANCELADO');
 
@@ -47,17 +48,18 @@ WHERE b.estado NOT IN ('CANCELADO');
 CREATE OR REPLACE VIEW vw_ocupacion_vuelos AS
 SELECT 
     v.id AS vuelo_id,
-    v.numero_vuelo,
+    r.codigo_vuelo AS numero_vuelo,
     m.capacidad_pasajeros AS capacidad_total,
     COUNT(b.id) AS boletos_vendidos,
     SUM(CASE WHEN b.estado IN ('CHECKIN','ABORDADO','COMPLETADO') THEN 1 ELSE 0 END) AS pasajeros_chequeados,
     ROUND((COUNT(b.id) / m.capacidad_pasajeros) * 100, 2) AS porcentaje_ocupacion,
     SUM(b.precio) AS ingresos_totales
 FROM vuelos v
+JOIN rutas r ON v.ruta_id = r.id
 JOIN aviones a ON v.avion_matricula = a.matricula
 JOIN modelos_avion m ON a.modelo_id = m.id
 LEFT JOIN boletos b ON v.id = b.vuelo_id AND b.estado NOT IN ('CANCELADO', 'NO_SHOW')
-GROUP BY v.id, v.numero_vuelo, m.capacidad_pasajeros;
+GROUP BY v.id, r.codigo_vuelo, m.capacidad_pasajeros;
 
 -- 4. vw_historial_reservaciones
 CREATE OR REPLACE VIEW vw_historial_reservaciones AS
@@ -69,13 +71,14 @@ SELECT
     p.nombres,
     p.apellidos,
     b.numero_boleto,
-    v.numero_vuelo,
+    ru.codigo_vuelo AS numero_vuelo,
     v.fecha_hora_salida,
     b.estado AS estado_boleto
 FROM reservaciones r
 JOIN boletos b ON r.id = b.reservacion_id
 JOIN personas p ON b.pasajero_id = p.id
-JOIN vuelos v ON b.vuelo_id = v.id;
+JOIN vuelos v ON b.vuelo_id = v.id
+JOIN rutas ru ON v.ruta_id = ru.id;
 
 -- 5. vw_disponibilidad_tripulacion
 CREATE OR REPLACE VIEW vw_disponibilidad_tripulacion AS

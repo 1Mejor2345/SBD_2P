@@ -9,9 +9,9 @@
 <div style="max-width: 1000px; margin: 0 auto;">
     {% for v in vuelos %}
     <div class="card flight-card" style="margin-bottom: 1.5rem;">
-        <div class="flight-card-header">
+        <div class="flight-card-header" style="cursor: pointer;" onclick="toggleFares('fares-{{ v.id }}')" title="Clic para ver tarifas">
             <div class="flight-info">
-                <span class="flight-number">{{ v.numero_vuelo }}</span>
+                <span class="flight-number">Ruta {{ v.numero_vuelo }}</span>
                 <span class="text-muted" style="font-size: 0.85rem;">{{ v.avion_modelo }}</span>
             </div>
             <div class="flight-route-display">
@@ -40,11 +40,14 @@
                 <strong style="color: {{ 'var(--success)' if (v.capacidad_pasajeros - v.boletos_vendidos) > 20 else 'var(--warning)' if (v.capacidad_pasajeros - v.boletos_vendidos) > 5 else 'var(--danger)' }}">
                     {{ v.capacidad_pasajeros - v.boletos_vendidos }} asientos
                 </strong>
+                <div style="margin-top: 0.5rem; color: var(--primary); font-weight: bold; font-size: 0.9rem;">
+                    Ver Tarifas ▼
+                </div>
             </div>
         </div>
 
         <!-- Tarifas -->
-        <div class="fare-grid">
+        <div id="fares-{{ v.id }}" class="fare-grid" style="display: none; border-top: 1px solid var(--border-color); padding-top: 1.5rem; margin-top: 1rem;">
             {% for t in tarifas %}
             <div class="fare-option">
                 <h4>{{ t.nombre }}</h4>
@@ -77,4 +80,15 @@
     <a href="{{ url_for('buscar_vuelos') }}" class="btn btn-primary" style="margin-top: 1rem;">Buscar Nuevamente</a>
 </div>
 {% endif %}
+
+<script>
+function toggleFares(id) {
+    const el = document.getElementById(id);
+    if (el.style.display === 'none') {
+        el.style.display = 'grid'; // Asumiendo que fare-grid usa display: grid
+    } else {
+        el.style.display = 'none';
+    }
+}
+</script>
 {% endblock %}

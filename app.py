@@ -197,29 +197,56 @@ def dashboard():
             "SELECT COUNT(*) AS c FROM rutas WHERE esta_activa = TRUE",
             fetchone=True
         ) or {'c': 0}
+    elif role == 'Viajero':
+        stats['mis_reservas'] = execute_query(
+            "SELECT COUNT(*) AS c FROM reservaciones WHERE usuario_creador_id = %s AND estado != 'CANCELADA'",
+            (session['user_id'],), fetchone=True
+        ) or {'c': 0}
+        stats['checkins_pendientes'] = execute_query(
+            "SELECT COUNT(*) AS c FROM boletos b JOIN vuelos v ON b.vuelo_id = v.id WHERE b.estado = 'EMITIDO' AND DATE(v.fecha_hora_salida) = CURDATE() AND b.pasajero_id = (SELECT persona_id FROM usuarios WHERE id = %s)",
+            (session['user_id'],), fetchone=True
+        ) or {'c': 0}
     
-    # Próximos vuelos para todos los roles
-    proximos_vuelos = execute_query(
-        """SELECT v.id, v.numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada, v.estado,
-                  ao.codigo_iata AS origen, ad.codigo_iata AS destino,
-                  co.nombre AS ciudad_origen, cd.nombre AS ciudad_destino
-           FROM vuelos v
-           JOIN rutas r ON v.ruta_id = r.id
-           JOIN aeropuertos ao ON r.origen_iata = ao.codigo_iata
-           JOIN aeropuertos ad ON r.destino_iata = ad.codigo_iata
-           JOIN ciudades co ON ao.ciudad_id = co.id
-           JOIN ciudades cd ON ad.ciudad_id = cd.id
-           WHERE v.fecha_hora_salida >= NOW()
-           ORDER BY v.fecha_hora_salida LIMIT 10""",
-        fetchall=True
-    ) or []
+    # Próximos vuelos para todos los roles excepto Viajero
+    proximos_vuelos = []
+    mis_reservaciones = []
     
-    return render_template('dashboard.html', stats=stats, proximos_vuelos=proximos_vuelos)
+    if role != 'Viajero':
+        proximos_vuelos = execute_query(
+            """SELECT v.id, r.codigo_vuelo AS numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada, v.estado,
+                      ao.codigo_iata AS origen, ad.codigo_iata AS destino,
+                      co.nombre AS ciudad_origen, cd.nombre AS ciudad_destino
+               FROM vuelos v
+               JOIN rutas r ON v.ruta_id = r.id
+               JOIN aeropuertos ao ON r.origen_iata = ao.codigo_iata
+               JOIN aeropuertos ad ON r.destino_iata = ad.codigo_iata
+               JOIN ciudades co ON ao.ciudad_id = co.id
+               JOIN ciudades cd ON ad.ciudad_id = cd.id
+               WHERE v.fecha_hora_salida >= NOW()
+               ORDER BY v.fecha_hora_salida LIMIT 10""",
+            fetchall=True
+        ) or []
+    else:
+        mis_reservaciones = execute_query(
+            """SELECT r.id, r.codigo_pnr, r.estado, ru.codigo_vuelo AS numero_vuelo, v.fecha_hora_salida, ao.codigo_iata AS origen, ad.codigo_iata AS destino
+               FROM reservaciones r
+               JOIN boletos b ON r.id = b.reservacion_id
+               JOIN vuelos v ON b.vuelo_id = v.id
+               JOIN rutas ru ON v.ruta_id = ru.id
+               JOIN aeropuertos ao ON ru.origen_iata = ao.codigo_iata
+               JOIN aeropuertos ad ON ru.destino_iata = ad.codigo_iata
+               WHERE r.usuario_creador_id = %s AND r.estado != 'CANCELADA'
+               GROUP BY r.id, v.id
+               ORDER BY v.fecha_hora_salida ASC LIMIT 5""",
+            (session['user_id'],), fetchall=True
+        ) or []
+    
+    return render_template('dashboard.html', stats=stats, proximos_vuelos=proximos_vuelos, mis_reservaciones=mis_reservaciones)
 
 # ─── CRUD 1: RESERVACIONES ───────────────────────────────────────
 @app.route('/reservaciones/buscar')
 @login_required
-@role_required(['Agente', 'Administrador', 'Supervisor'])
+@role_required(['Agente', 'Administrador', 'Supervisor', 'Viajero'])
 def buscar_vuelos():
     aeropuertos = execute_query(
         """SELECT a.codigo_iata, a.nombre, c.nombre AS ciudad
@@ -227,7 +254,20 @@ def buscar_vuelos():
            ORDER BY c.nombre""",
         fetchall=True
     ) or []
-    return render_template('reservaciones/buscar_vuelos.html', aeropuertos=aeropuertos)
+    
+    rutas = execute_query(
+        """SELECT r.codigo_vuelo, r.origen_iata, r.destino_iata, r.hora_salida, co.nombre AS ciudad_origen, cd.nombre AS ciudad_destino
+           FROM rutas r
+           JOIN aeropuertos ao ON r.origen_iata = ao.codigo_iata
+           JOIN ciudades co ON ao.ciudad_id = co.id
+           JOIN aeropuertos ad ON r.destino_iata = ad.codigo_iata
+           JOIN ciudades cd ON ad.ciudad_id = cd.id
+           WHERE r.esta_activa = TRUE
+           ORDER BY r.codigo_vuelo""",
+        fetchall=True
+    ) or []
+    
+    return render_template('reservaciones/buscar_vuelos.html', aeropuertos=aeropuertos, rutas=rutas)
 
 @app.route('/reservaciones/resultados', methods=['POST'])
 @login_required
@@ -238,7 +278,7 @@ def resultados_vuelos():
     pasajeros = int(request.form.get('pasajeros', 1))
     
     vuelos = execute_query(
-        """SELECT v.id, v.numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada,
+        """SELECT v.id, r.codigo_vuelo AS numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada,
                   ao.codigo_iata AS origen_iata, ad.codigo_iata AS destino_iata,
                   co.nombre AS ciudad_origen, cd.nombre AS ciudad_destino,
                   r.duracion_estimada_min, ma.modelo AS avion_modelo,
@@ -264,12 +304,30 @@ def resultados_vuelos():
     clases = execute_query("SELECT * FROM clases_servicio ORDER BY id", fetchall=True) or []
     
     return render_template('reservaciones/resultados.html',
-                           vuelos=vuelos, pasajeros=pasajeros, tarifas=tarifas, clases=clases,
-                           origen=origen, destino=destino, fecha=fecha)
+                           origen=origen, destino=destino,
+                           fecha=fecha, pasajeros=pasajeros,
+                           vuelos=vuelos, tarifas=tarifas, clases=clases)
+
+@app.route('/api/persona/<numero_documento>')
+@login_required
+def buscar_persona_api(numero_documento):
+    persona = execute_query(
+        """SELECT tipo_documento, numero_documento, nombres, apellidos, 
+                  email, telefono, fecha_nacimiento, nacionalidad, genero
+           FROM personas
+           WHERE numero_documento = %s""",
+        (numero_documento,), fetchone=True
+    )
+    import datetime
+    if persona:
+        if isinstance(persona['fecha_nacimiento'], datetime.date):
+            persona['fecha_nacimiento'] = persona['fecha_nacimiento'].isoformat()
+        return persona
+    return {}, 404
 
 @app.route('/reservaciones/nueva', methods=['GET', 'POST'])
 @login_required
-@role_required(['Agente', 'Administrador'])
+@role_required(['Agente', 'Administrador', 'Viajero'])
 def nueva_reservacion():
     if request.method == 'POST':
         email = request.form.get('email')
@@ -385,21 +443,24 @@ def nueva_reservacion():
 @app.route('/reservaciones')
 @login_required
 def lista_reservaciones():
-    reservaciones = execute_query(
-        """SELECT r.id, r.codigo_pnr, r.fecha_creacion, r.estado, r.contacto_email,
-                  COUNT(b.id) AS num_boletos,
-                  GROUP_CONCAT(DISTINCT CONCAT(ao.codigo_iata, '→', ad.codigo_iata) SEPARATOR ', ') AS rutas
-           FROM reservaciones r
-           LEFT JOIN boletos b ON r.id = b.reservacion_id
-           LEFT JOIN vuelos v ON b.vuelo_id = v.id
-           LEFT JOIN rutas ru ON v.ruta_id = ru.id
-           LEFT JOIN aeropuertos ao ON ru.origen_iata = ao.codigo_iata
-           LEFT JOIN aeropuertos ad ON ru.destino_iata = ad.codigo_iata
-           GROUP BY r.id
-           ORDER BY r.fecha_creacion DESC
-           LIMIT 50""",
-        fetchall=True
-    ) or []
+    role = session.get('user_role')
+    query = """SELECT r.id, r.codigo_pnr, r.fecha_creacion, r.estado, r.contacto_email,
+                      COUNT(b.id) AS num_boletos,
+                      GROUP_CONCAT(DISTINCT CONCAT(ao.codigo_iata, '→', ad.codigo_iata) SEPARATOR ', ') AS rutas
+               FROM reservaciones r
+               LEFT JOIN boletos b ON r.id = b.reservacion_id
+               LEFT JOIN vuelos v ON b.vuelo_id = v.id
+               LEFT JOIN rutas ru ON v.ruta_id = ru.id
+               LEFT JOIN aeropuertos ao ON ru.origen_iata = ao.codigo_iata
+               LEFT JOIN aeropuertos ad ON ru.destino_iata = ad.codigo_iata"""
+    
+    if role == 'Viajero':
+        query += " WHERE r.usuario_creador_id = %s"
+        query += " GROUP BY r.id ORDER BY r.fecha_creacion DESC LIMIT 50"
+        reservaciones = execute_query(query, (session['user_id'],), fetchall=True) or []
+    else:
+        query += " GROUP BY r.id ORDER BY r.fecha_creacion DESC LIMIT 50"
+        reservaciones = execute_query(query, fetchall=True) or []
     return render_template('reservaciones/lista.html', reservaciones=reservaciones)
 
 @app.route('/reservaciones/<int:id>')
@@ -410,7 +471,7 @@ def detalle_reservacion(id):
     )
     boletos = execute_query(
         """SELECT b.*, p.nombres, p.apellidos, p.numero_documento,
-                  v.numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada,
+                  r.codigo_vuelo AS numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada,
                   r.origen_iata, r.destino_iata,
                   cs.nombre AS clase, ft.nombre AS tarifa
            FROM boletos b
@@ -447,7 +508,7 @@ def buscar_checkin():
         if tipo == 'pnr':
             resultados = execute_query(
                 """SELECT r.id, r.codigo_pnr, r.estado,
-                          v.numero_vuelo, v.fecha_hora_salida,
+                          ru.codigo_vuelo AS numero_vuelo, v.fecha_hora_salida,
                           ao.codigo_iata AS origen, ad.codigo_iata AS destino
                    FROM reservaciones r
                    JOIN boletos b ON r.id = b.reservacion_id
@@ -462,7 +523,7 @@ def buscar_checkin():
         else:
             resultados = execute_query(
                 """SELECT r.id, r.codigo_pnr, r.estado,
-                          v.numero_vuelo, v.fecha_hora_salida,
+                          ru.codigo_vuelo AS numero_vuelo, v.fecha_hora_salida,
                           ao.codigo_iata AS origen, ad.codigo_iata AS destino
                    FROM reservaciones r
                    JOIN boletos b ON r.id = b.reservacion_id
@@ -490,7 +551,7 @@ def pasajeros_checkin(reservacion_id):
     boletos = execute_query(
         """SELECT b.id, b.numero_boleto, b.estado, b.numero_asiento,
                   p.nombres, p.apellidos, p.numero_documento,
-                  v.numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada,
+                  r.codigo_vuelo AS numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada,
                   r.origen_iata, r.destino_iata,
                   cs.nombre AS clase, ft.nombre AS tarifa
            FROM boletos b
@@ -522,7 +583,7 @@ def proceso_checkin(boleto_id):
     
     boleto = execute_query(
         """SELECT b.*, p.nombres, p.apellidos, p.numero_documento,
-                  v.id AS vuelo_id, v.numero_vuelo, v.fecha_hora_salida,
+                  v.id AS vuelo_id, r.codigo_vuelo AS numero_vuelo, v.fecha_hora_salida,
                   r.origen_iata, r.destino_iata,
                   cs.nombre AS clase
            FROM boletos b
@@ -562,7 +623,7 @@ def registrar_equipaje(boleto_id):
             flash(f'Error: {result[4] if result else "desconocido"}', 'danger')
     
     boleto = execute_query(
-        """SELECT b.*, p.nombres, p.apellidos, v.numero_vuelo,
+        """SELECT b.*, p.nombres, p.apellidos, r.codigo_vuelo AS numero_vuelo,
                   r.origen_iata, r.destino_iata, ft.nombre AS tarifa,
                   ft.incluye_equipaje_bodega, ft.peso_equipaje_incluido_kg
            FROM boletos b
@@ -587,7 +648,7 @@ def pase_abordar(boleto_id):
     pase = execute_query(
         """SELECT pa.*, b.numero_boleto, b.numero_asiento, b.precio,
                   p.nombres, p.apellidos, p.numero_documento,
-                  v.numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada,
+                  r.codigo_vuelo AS numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada,
                   r.origen_iata, r.destino_iata,
                   ao.nombre AS aero_origen, ad.nombre AS aero_destino,
                   co.nombre AS ciudad_origen, cd.nombre AS ciudad_destino,
@@ -616,7 +677,7 @@ def pase_abordar(boleto_id):
 @role_required(['Supervisor', 'Administrador'])
 def lista_vuelos():
     estado_filtro = request.args.get('estado', '')
-    query = """SELECT v.id, v.numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada, v.estado,
+    query = """SELECT v.id, r.codigo_vuelo AS numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada, v.estado,
                       r.origen_iata, r.destino_iata, a.matricula, ma.modelo,
                       co.nombre AS ciudad_origen, cd.nombre AS ciudad_destino,
                       (SELECT COUNT(*) FROM boletos b WHERE b.vuelo_id = v.id AND b.estado NOT IN ('CANCELADO','NO_SHOW')) AS pasajeros
@@ -642,25 +703,42 @@ def lista_vuelos():
 @role_required(['Supervisor', 'Administrador'])
 def nuevo_vuelo():
     if request.method == 'POST':
-        numero = request.form.get('numero_vuelo')
         ruta_id = request.form.get('ruta_id')
         avion = request.form.get('avion_matricula')
-        salida = request.form.get('fecha_hora_salida')
-        llegada = request.form.get('fecha_hora_llegada')
+        fecha = request.form.get('fecha_vuelo')
         puerta = request.form.get('puerta_embarque_id') or None
         sobreventa = request.form.get('limite_sobreventa', 0)
         observaciones = request.form.get('observaciones', '')
         
-        execute_query(
-            """INSERT INTO vuelos (numero_vuelo, ruta_id, avion_matricula, fecha_hora_salida, fecha_hora_llegada, puerta_embarque_id, limite_sobreventa, observaciones)
-               VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
-            (numero, ruta_id, avion, salida, llegada, puerta, sobreventa, observaciones)
-        )
-        flash('✅ Vuelo programado exitosamente.', 'success')
+        ruta = execute_query("SELECT hora_salida, duracion_estimada_min FROM rutas WHERE id = %s", (ruta_id,), fetchone=True)
+        if ruta:
+            from datetime import datetime, timedelta
+            import time
+            if isinstance(ruta['hora_salida'], timedelta):
+                total_seconds = int(ruta['hora_salida'].total_seconds())
+                h = total_seconds // 3600
+                m = (total_seconds % 3600) // 60
+                s = total_seconds % 60
+                hora_str = f"{h:02d}:{m:02d}:{s:02d}"
+            else:
+                hora_str = str(ruta['hora_salida'])
+            
+            fecha_salida = datetime.strptime(f"{fecha} {hora_str}", "%Y-%m-%d %H:%M:%S")
+            fecha_llegada = fecha_salida + timedelta(minutes=ruta['duracion_estimada_min'])
+            
+            execute_query(
+                """INSERT INTO vuelos (ruta_id, fecha_vuelo, avion_matricula, fecha_hora_salida, fecha_hora_llegada, puerta_embarque_id, limite_sobreventa, observaciones)
+                   VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                (ruta_id, fecha, avion, fecha_salida, fecha_llegada, puerta, sobreventa, observaciones)
+            )
+            flash('✅ Vuelo programado exitosamente.', 'success')
+        else:
+            flash('Error: Ruta no encontrada.', 'danger')
+            
         return redirect(url_for('lista_vuelos'))
     
     rutas = execute_query(
-        """SELECT r.id, r.origen_iata, r.destino_iata, r.distancia_km, r.duracion_estimada_min,
+        """SELECT r.id, r.codigo_vuelo, r.origen_iata, r.destino_iata, r.distancia_km, r.duracion_estimada_min, r.hora_salida,
                   co.nombre AS ciudad_origen, cd.nombre AS ciudad_destino
            FROM rutas r
            JOIN aeropuertos ao ON r.origen_iata = ao.codigo_iata
@@ -691,6 +769,7 @@ def nuevo_vuelo():
 
 @app.route('/vuelos/<int:id>')
 @login_required
+@role_required(['Supervisor', 'Administrador', 'Agente'])
 def detalle_vuelo(id):
     vuelo = execute_query(
         """SELECT v.*, r.origen_iata, r.destino_iata, r.distancia_km,

@@ -24,6 +24,11 @@
         <a href="{{ url_for('admin_aviones') }}" class="btn btn-outline">🛩️ Gestionar Flota</a>
         <a href="{{ url_for('admin_empleados') }}" class="btn btn-outline">👥 Gestionar Personal</a>
         {% endif %}
+
+        {% if session.get('user_role') == 'Viajero' %}
+        <a href="{{ url_for('buscar_vuelos') }}" class="btn btn-primary">🔍 Buscar Nuevos Vuelos</a>
+        <a href="{{ url_for('lista_reservaciones') }}" class="btn btn-outline">🎫 Mis Reservaciones</a>
+        {% endif %}
     </div>
 </div>
 
@@ -93,6 +98,23 @@
         </div>
     </div>
     {% endif %}
+
+    {% if session.get('user_role') == 'Viajero' %}
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, var(--primary), var(--primary-light));">🎫</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.get('mis_reservas', {}).get('c', 0) }}</span>
+            <span class="stat-label">Mis Reservas Activas</span>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon" style="background: linear-gradient(135deg, var(--warning), #E8B04B);">⏳</div>
+        <div class="stat-info">
+            <span class="stat-value">{{ stats.get('checkins_pendientes', {}).get('c', 0) }}</span>
+            <span class="stat-label">Check-ins Pendientes</span>
+        </div>
+    </div>
+    {% endif %}
 </div>
 
 
@@ -104,9 +126,10 @@
         <table>
             <thead>
                 <tr>
-                    <th>Vuelo</th>
-                    <th>Ruta</th>
-                    <th>Salida</th>
+                    <th>Ruta (Código)</th>
+                    <th>Origen → Destino</th>
+                    <th>Hora Ruta</th>
+                    <th>Fecha Vuelo</th>
                     <th>Llegada</th>
                     <th>Estado</th>
                     <th>Acción</th>
@@ -124,8 +147,9 @@
                         </span>
                         <br><small class="text-muted">{{ v.ciudad_origen }} → {{ v.ciudad_destino }}</small>
                     </td>
-                    <td>{{ v.fecha_hora_salida.strftime('%d/%m %H:%M') if v.fecha_hora_salida else 'N/A' }}</td>
-                    <td>{{ v.fecha_hora_llegada.strftime('%d/%m %H:%M') if v.fecha_hora_llegada else 'N/A' }}</td>
+                    <td>{{ v.fecha_hora_salida.strftime('%H:%M') if v.fecha_hora_salida else 'N/A' }}</td>
+                    <td>{{ v.fecha_hora_salida.strftime('%d/%m/%Y') if v.fecha_hora_salida else 'N/A' }}</td>
+                    <td>{{ v.fecha_hora_llegada.strftime('%d/%m/%Y %H:%M') if v.fecha_hora_llegada else 'N/A' }}</td>
                     <td>
                         <span class="badge badge-{{ 'success' if v.estado == 'PROGRAMADO' else 'warning' if v.estado == 'EMBARQUE' else 'info' if v.estado == 'EN_VUELO' else 'danger' if v.estado == 'CANCELADO' else 'default' }}">
                             {{ v.estado }}
@@ -133,6 +157,54 @@
                     </td>
                     <td>
                         <a href="{{ url_for('detalle_vuelo', id=v.id) }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Ver</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+{% endif %}
+
+<!-- Mis Próximos Vuelos (Viajero) -->
+{% if mis_reservaciones %}
+<div class="card" style="margin-top: 1rem;">
+    <h3 style="margin-bottom: 1rem;">🎫 Mis Próximos Vuelos</h3>
+    <div class="table-responsive">
+        <table>
+            <thead>
+                <tr>
+                    <th>PNR</th>
+                    <th>Ruta (Código)</th>
+                    <th>Origen → Destino</th>
+                    <th>Hora Ruta</th>
+                    <th>Fecha Vuelo</th>
+                    <th>Estado</th>
+                    <th>Acción</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in mis_reservaciones %}
+                <tr>
+                    <td><strong>{{ r.codigo_pnr }}</strong></td>
+                    <td><strong>{{ r.numero_vuelo }}</strong></td>
+                    <td>
+                        <span class="flight-route">
+                            <strong>{{ r.origen }}</strong>
+                            <span class="route-arrow">→</span>
+                            <strong>{{ r.destino }}</strong>
+                        </span>
+                    </td>
+                    <td>{{ r.fecha_hora_salida.strftime('%H:%M') if r.fecha_hora_salida else 'N/A' }}</td>
+                    <td>{{ r.fecha_hora_salida.strftime('%d/%m/%Y') if r.fecha_hora_salida else 'N/A' }}</td>
+                    <td>
+                        <span class="badge badge-{{ 'success' if r.estado == 'CONFIRMADA' else 'warning' if r.estado == 'PENDIENTE' else 'info' }}">
+                            {{ r.estado }}
+                        </span>
+                    </td>
+                    <td>
+                        <a href="{{ url_for('detalle_reservacion', id=r.id) }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Ver Boleto</a>
                     </td>
                 </tr>
                 {% endfor %}

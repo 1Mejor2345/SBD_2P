@@ -73,27 +73,22 @@ CROSS JOIN
      UNION SELECT 'D' UNION SELECT 'E' UNION SELECT 'F') c;
 
 -- Rutas
-INSERT INTO rutas (origen_iata, destino_iata, distancia_km, duracion_estimada_min) VALUES
-('UIO', 'GYE', 280, 50),
-('UIO', 'CUE', 310, 55),
-('GYE', 'GPS', 1170, 110),
-('UIO', 'MEC', 260, 45),
-('UIO', 'BOG', 730, 90),
-('UIO', 'LIM', 1330, 130),
-('UIO', 'MIA', 2880, 240),
-('GYE', 'BOG', 1000, 110),
-('GYE', 'PTY', 1250, 120),
-('UIO', 'MEX', 3160, 280),
-('UIO', 'SCL', 3800, 310),
-('UIO', 'GRU', 4320, 360),
-('UIO', 'EZE', 4380, 360);
+INSERT INTO rutas (id, codigo_vuelo, origen_iata, destino_iata, hora_salida, distancia_km, duracion_estimada_min) VALUES
+(1, 'PG101', 'UIO', 'GYE', '10:00:00', 280, 50),
+(2, 'PG102', 'UIO', 'GYE', '15:00:00', 280, 50),
+(3, 'PG103', 'UIO', 'CUE', '11:00:00', 310, 55),
+(4, 'PG104', 'GYE', 'GPS', '09:00:00', 1170, 110),
+(5, 'PG201', 'UIO', 'BOG', '08:00:00', 730, 90),
+(6, 'PG301', 'UIO', 'MIA', '07:00:00', 2880, 240),
+(7, 'PG105', 'UIO', 'GYE', '06:00:00', 280, 50),
+(8, 'PG106', 'UIO', 'GYE', '19:00:00', 280, 50);
 
 -- Roles
 INSERT INTO roles (nombre, descripcion) VALUES
 ('Administrador', 'Acceso total al sistema'),
-('Supervisor de Vuelos', 'Gestión de vuelos y personal'),
+('Supervisor', 'Gestión de vuelos y personal'),
 ('Agente', 'Agente de check-in y ventas'),
-('Pasajero', 'Cliente regular');
+('Viajero', 'Cliente final portal web');
 
 -- Personas (Nombres Ecuatorianos)
 INSERT INTO personas (tipo_documento, numero_documento, nombres, apellidos, email, nacionalidad, genero) VALUES
@@ -105,6 +100,10 @@ INSERT INTO personas (tipo_documento, numero_documento, nombres, apellidos, emai
 ('CEDULA', '1302345678', 'Pedro', 'Castro', 'pedro.c@test.com', 'EC', 'M'),
 ('CEDULA', '1702345678', 'Diana', 'Ruiz', 'diana.r@test.com', 'EC', 'F'),
 ('CEDULA', '1723456789', 'Andrea', 'Pazmino', 'andrea.p@test.com', 'EC', 'F');
+
+-- Persona del usuario (José Paladines)
+INSERT INTO personas (tipo_documento, numero_documento, nombres, apellidos, email, telefono, fecha_nacimiento, nacionalidad, genero) VALUES
+('CEDULA', '0943969386', 'José', 'Paladines', 'josepala@espol.edu.ec', '+593969495722', '2007-10-06', 'EC', 'M');
 
 -- Empleados
 INSERT INTO empleados (persona_id, codigo_empleado, cargo, numero_licencia, fecha_contratacion, salario) VALUES
@@ -118,7 +117,9 @@ INSERT INTO empleados (persona_id, codigo_empleado, cargo, numero_licencia, fech
 -- Usuarios (hash sha256 para demostracion. Nota: flask usara bcrypt o werkzeug hash)
 INSERT INTO usuarios (persona_id, username, hash_contrasena, rol_id) VALUES
 (1, 'admin', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 1), -- admin
-(2, 'agente', '8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918', 3); -- agente
+(2, 'agente', 'afb812d3ea7146079bebf27a371a3b30d695c8e7a5f532170fca6dc2068267ec', 3), -- agente
+(7, 'supervisor', '0834c2d60725ac5902257b3b78dd161ad26d1c0290dbf1e47cc14add5b8c8142', 2), -- supervisor
+(3, 'viajero', 'f32a42cd7d3c2ffcc000ac7bda94c85701bf7a204e1e2a9b6354ef81c2fa212f', 4); -- viajero
 
 -- Clases
 INSERT INTO clases_servicio (nombre, factor_precio) VALUES 
@@ -132,11 +133,66 @@ INSERT INTO familias_tarifa (nombre, incluye_equipaje_bodega, peso_equipaje_incl
 ('Flex', TRUE, 64, TRUE, TRUE, TRUE, TRUE);
 
 -- Vuelos
-INSERT INTO vuelos (numero_vuelo, ruta_id, avion_matricula, fecha_hora_salida, fecha_hora_llegada, puerta_embarque_id) VALUES
-('PG101', 1, 'HC-CPA', '2026-08-01 10:00:00', '2026-08-01 10:50:00', 1),
-('PG102', 1, 'HC-CPB', '2026-08-01 15:00:00', '2026-08-01 15:50:00', 2),
-('PG201', 5, 'HC-CPC', '2026-08-02 08:00:00', '2026-08-02 09:30:00', 3),
-('PG301', 7, 'HC-CPD', '2026-08-03 07:00:00', '2026-08-03 11:00:00', 4);
+INSERT INTO vuelos (ruta_id, fecha_vuelo, avion_matricula, fecha_hora_salida, fecha_hora_llegada, puerta_embarque_id) VALUES
+-- PG101 (Ruta 1) 10:00
+(1, '2026-07-27', 'HC-CPA', '2026-07-27 10:00:00', '2026-07-27 10:50:00', 1),
+(1, '2026-07-28', 'HC-CPA', '2026-07-28 10:00:00', '2026-07-28 10:50:00', 1),
+(1, '2026-07-29', 'HC-CPA', '2026-07-29 10:00:00', '2026-07-29 10:50:00', 1),
+(1, '2026-07-30', 'HC-CPA', '2026-07-30 10:00:00', '2026-07-30 10:50:00', 1),
+(1, '2026-07-31', 'HC-CPA', '2026-07-31 10:00:00', '2026-07-31 10:50:00', 1),
+(1, '2026-08-01', 'HC-CPA', '2026-08-01 10:00:00', '2026-08-01 10:50:00', 1),
+(1, '2026-08-02', 'HC-CPA', '2026-08-02 10:00:00', '2026-08-02 10:50:00', 1),
+(1, '2026-08-03', 'HC-CPA', '2026-08-03 10:00:00', '2026-08-03 10:50:00', 1),
+(1, '2026-08-04', 'HC-CPA', '2026-08-04 10:00:00', '2026-08-04 10:50:00', 1),
+(1, '2026-08-05', 'HC-CPA', '2026-08-05 10:00:00', '2026-08-05 10:50:00', 1),
+(1, '2026-08-06', 'HC-CPA', '2026-08-06 10:00:00', '2026-08-06 10:50:00', 1),
+(1, '2026-08-07', 'HC-CPA', '2026-08-07 10:00:00', '2026-08-07 10:50:00', 1),
+
+-- PG102 (Ruta 2) 15:00
+(2, '2026-07-27', 'HC-CPB', '2026-07-27 15:00:00', '2026-07-27 15:50:00', 2),
+(2, '2026-07-28', 'HC-CPB', '2026-07-28 15:00:00', '2026-07-28 15:50:00', 2),
+(2, '2026-07-29', 'HC-CPB', '2026-07-29 15:00:00', '2026-07-29 15:50:00', 2),
+(2, '2026-07-30', 'HC-CPB', '2026-07-30 15:00:00', '2026-07-30 15:50:00', 2),
+(2, '2026-07-31', 'HC-CPB', '2026-07-31 15:00:00', '2026-07-31 15:50:00', 2),
+(2, '2026-08-01', 'HC-CPB', '2026-08-01 15:00:00', '2026-08-01 15:50:00', 2),
+(2, '2026-08-02', 'HC-CPB', '2026-08-02 15:00:00', '2026-08-02 15:50:00', 2),
+(2, '2026-08-03', 'HC-CPB', '2026-08-03 15:00:00', '2026-08-03 15:50:00', 2),
+(2, '2026-08-04', 'HC-CPB', '2026-08-04 15:00:00', '2026-08-04 15:50:00', 2),
+(2, '2026-08-05', 'HC-CPB', '2026-08-05 15:00:00', '2026-08-05 15:50:00', 2),
+(2, '2026-08-06', 'HC-CPB', '2026-08-06 15:00:00', '2026-08-06 15:50:00', 2),
+(2, '2026-08-07', 'HC-CPB', '2026-08-07 15:00:00', '2026-08-07 15:50:00', 2),
+
+-- PG105 (Ruta 7) 06:00
+(7, '2026-07-27', 'HC-CPF', '2026-07-27 06:00:00', '2026-07-27 06:50:00', 3),
+(7, '2026-07-28', 'HC-CPF', '2026-07-28 06:00:00', '2026-07-28 06:50:00', 3),
+(7, '2026-07-29', 'HC-CPF', '2026-07-29 06:00:00', '2026-07-29 06:50:00', 3),
+(7, '2026-07-30', 'HC-CPF', '2026-07-30 06:00:00', '2026-07-30 06:50:00', 3),
+(7, '2026-07-31', 'HC-CPF', '2026-07-31 06:00:00', '2026-07-31 06:50:00', 3),
+(7, '2026-08-01', 'HC-CPF', '2026-08-01 06:00:00', '2026-08-01 06:50:00', 3),
+(7, '2026-08-02', 'HC-CPF', '2026-08-02 06:00:00', '2026-08-02 06:50:00', 3),
+(7, '2026-08-03', 'HC-CPF', '2026-08-03 06:00:00', '2026-08-03 06:50:00', 3),
+(7, '2026-08-04', 'HC-CPF', '2026-08-04 06:00:00', '2026-08-04 06:50:00', 3),
+(7, '2026-08-05', 'HC-CPF', '2026-08-05 06:00:00', '2026-08-05 06:50:00', 3),
+(7, '2026-08-06', 'HC-CPF', '2026-08-06 06:00:00', '2026-08-06 06:50:00', 3),
+(7, '2026-08-07', 'HC-CPF', '2026-08-07 06:00:00', '2026-08-07 06:50:00', 3),
+
+-- PG106 (Ruta 8) 19:00
+(8, '2026-07-27', 'HC-CPG', '2026-07-27 19:00:00', '2026-07-27 19:50:00', 4),
+(8, '2026-07-28', 'HC-CPG', '2026-07-28 19:00:00', '2026-07-28 19:50:00', 4),
+(8, '2026-07-29', 'HC-CPG', '2026-07-29 19:00:00', '2026-07-29 19:50:00', 4),
+(8, '2026-07-30', 'HC-CPG', '2026-07-30 19:00:00', '2026-07-30 19:50:00', 4),
+(8, '2026-07-31', 'HC-CPG', '2026-07-31 19:00:00', '2026-07-31 19:50:00', 4),
+(8, '2026-08-01', 'HC-CPG', '2026-08-01 19:00:00', '2026-08-01 19:50:00', 4),
+(8, '2026-08-02', 'HC-CPG', '2026-08-02 19:00:00', '2026-08-02 19:50:00', 4),
+(8, '2026-08-03', 'HC-CPG', '2026-08-03 19:00:00', '2026-08-03 19:50:00', 4),
+(8, '2026-08-04', 'HC-CPG', '2026-08-04 19:00:00', '2026-08-04 19:50:00', 4),
+(8, '2026-08-05', 'HC-CPG', '2026-08-05 19:00:00', '2026-08-05 19:50:00', 4),
+(8, '2026-08-06', 'HC-CPG', '2026-08-06 19:00:00', '2026-08-06 19:50:00', 4),
+(8, '2026-08-07', 'HC-CPG', '2026-08-07 19:00:00', '2026-08-07 19:50:00', 4),
+
+-- Otros vuelos base
+(5, '2026-08-02', 'HC-CPC', '2026-08-02 08:00:00', '2026-08-02 09:30:00', 3),
+(6, '2026-08-03', 'HC-CPD', '2026-08-03 07:00:00', '2026-08-03 11:00:00', 4);
 
 -- Tripulacion Vuelo PG101
 INSERT INTO tripulacion_vuelo (vuelo_id, empleado_id, funcion) VALUES

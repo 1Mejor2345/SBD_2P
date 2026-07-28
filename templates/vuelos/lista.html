@@ -28,10 +28,11 @@
         <table>
             <thead>
                 <tr>
-                    <th>Vuelo</th>
-                    <th>Ruta</th>
+                    <th>Ruta (Código)</th>
+                    <th>Origen → Destino</th>
+                    <th>Hora Ruta</th>
+                    <th>Fecha Vuelo</th>
                     <th>Avión</th>
-                    <th>Salida</th>
                     <th>Llegada</th>
                     <th>Pasajeros</th>
                     <th>Estado</th>
@@ -46,9 +47,10 @@
                         <strong>{{ v.origen_iata }}</strong> → <strong>{{ v.destino_iata }}</strong>
                         <br><small class="text-muted">{{ v.ciudad_origen }} → {{ v.ciudad_destino }}</small>
                     </td>
+                    <td>{{ v.fecha_hora_salida.strftime('%H:%M') if v.fecha_hora_salida else 'N/A' }}</td>
+                    <td>{{ v.fecha_hora_salida.strftime('%d/%m/%Y') if v.fecha_hora_salida else 'N/A' }}</td>
                     <td>{{ v.matricula }}<br><small class="text-muted">{{ v.modelo }}</small></td>
-                    <td>{{ v.fecha_hora_salida.strftime('%d/%m %H:%M') if v.fecha_hora_salida else 'N/A' }}</td>
-                    <td>{{ v.fecha_hora_llegada.strftime('%d/%m %H:%M') if v.fecha_hora_llegada else 'N/A' }}</td>
+                    <td>{{ v.fecha_hora_llegada.strftime('%d/%m/%Y %H:%M') if v.fecha_hora_llegada else 'N/A' }}</td>
                     <td><strong>{{ v.pasajeros }}</strong></td>
                     <td>
                         <span class="badge badge-{{ 'success' if v.estado == 'PROGRAMADO' else 'warning' if v.estado in ('EMBARQUE','RETRASADO') else 'info' if v.estado in ('EN_VUELO','ATERRIZADO','ARRIBADO') else 'danger' }}">
