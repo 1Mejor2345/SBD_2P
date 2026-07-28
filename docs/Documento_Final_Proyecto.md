@@ -9,11 +9,11 @@ Diseñar y desarrollar un sistema integral y robusto apoyado en una base de dato
 
 ## 3. Funcionalidades del Sistema
 El sistema cubre el ciclo operativo completo de una aerolínea a través de las siguientes funcionalidades principales:
-1. **Gestión de Reservaciones y Venta Comercial:** Búsqueda dinámica de vuelos disponibles y creación de reservas (códigos PNR) junto con la emisión concurrente de boletos.
-2. **Check-in y Asignación de Asientos:** Mapa visual de asientos interactivo que permite la selección de lugares, validando la disponibilidad en tiempo real para evitar la duplicidad.
-3. **Gestión Operativa de Vuelos:** Tablero de control (Dashboard) y herramientas para administradores y supervisores que permiten reprogramar, cancelar o cambiar el estado de los vuelos ('Programado', 'Embarque', 'Cancelado').
+1. **Gestión de Reservaciones y Venta Comercial:** Búsqueda dinámica de vuelos disponibles por Ruta Maestra y creación de reservas (códigos PNR) junto con la emisión concurrente de boletos. Incluye autocompletado en tiempo real ("Pasajero Frecuente") consultando la base de datos por número de cédula.
+2. **Check-in y Asignación de Asientos:** Mapa visual interactivo para selección de lugares que bloquea en tiempo real para evitar la duplicidad u overbooking.
+3. **Gestión Operativa de Vuelos:** Tablero de control (Dashboard) basado en seguridad por roles. Aplica una separación estricta entre **Rutas** (entidad maestra que almacena el código de vuelo y hora de salida) y **Vuelos** (instancias de la ruta en fechas específicas).
 4. **Registro de Equipaje:** Asignación de equipaje de cabina o bodega validando pesos máximos permitidos por tarifa y emitiendo tags de rastreo.
-5. **Auditoría e Integridad (Soft Deletes):** El sistema prohíbe la eliminación física de registros críticos, manejando desactivaciones lógicas y guardando un historial de acciones mediante triggers de auditoría.
+5. **Auditoría e Integridad (Soft Deletes):** El sistema prohíbe la eliminación física de registros críticos, manejando desactivaciones lógicas y guardando un historial mediante triggers.
 
 ## 4. Modelo Físico de Base de Datos
 La base de datos MySQL `pegaso_airlines` consta de **22 tablas** rigurosamente normalizadas. El modelo físico incluye:
@@ -22,10 +22,10 @@ La base de datos MySQL `pegaso_airlines` consta de **22 tablas** rigurosamente n
 - **Motores e Índices:** Se utiliza `InnoDB` para soportar transacciones ACID. Se crearon 10 índices optimizados (ej. sobre PNR, estados de boletos, y fechas de vuelos) para agilizar las búsquedas recurrentes.
 
 ## 5. Implementación Funcional (Frontend)
-El Frontend fue desarrollado bajo una arquitectura MVC empleando **Python (Flask)**, HTML5, CSS3, y JavaScript puro. El diseño es moderno (estilo *Glassmorphism* y *Dark Mode* adaptativo) y presenta 3 operaciones CRUD completamente operativas:
-1. **CRUD Reservaciones:** Creación de pasajeros, generación de código PNR y emisión de boletos con cálculo de tarifas.
-2. **CRUD Check-in:** Inserción de pases de abordar actualizando visualmente un mapa de asientos (HTML grid) y validando reglas de tiempo (>48 horas no permitido).
-3. **CRUD Vuelos:** Visualización y actualización del estado de la flota, reflejando "eliminaciones lógicas" (cambiando estados a Cancelado) e impactando en cascada.
+El Frontend fue desarrollado bajo una arquitectura MVC empleando **Python (Flask)**, HTML5, CSS3, y JavaScript puro. El diseño presenta interfaces limpias y adaptativas con manejo estricto de roles (Administrador, Supervisor, Agente, Viajero), garantizando que cada rol vea únicamente lo pertinente (ej. el Viajero no ve opciones administrativas, y las tarifas se ocultan en "acordeones" para evitar sobrecarga cognitiva).
+1. **CRUD Reservaciones:** Creación de pasajeros, autocompletado inteligente de datos, y emisión de boletos.
+2. **CRUD Check-in:** Inserción de pases de abordar actualizando visualmente un mapa de asientos (HTML grid) y previniendo colisiones concurrentes.
+3. **CRUD Vuelos:** Gestión estandarizada del modelo maestro de Rutas y sus Vuelos asociados. Se reflejan "eliminaciones lógicas" (Soft-Delete) cambiando estados a Cancelado.
 
 ## 6. Video de Demostración Funcional
 *El video muestra las 3 funcionalidades anteriores en acción desde el Frontend, seguidas inmediatamente de una consulta `SELECT` en MySQL Workbench para evidenciar que las transacciones y los bloqueos funcionaron correctamente en la base de datos subyacente.*
@@ -60,5 +60,6 @@ Los scripts SQL han sido modularizados y comentados siguiendo las mejores práct
 - `03_pegaso_views.sql`: Extracción consolidada de datos.
 - `04_pegaso_procedures.sql`: Lógica de transacciones e inserciones.
 - `05_pegaso_triggers.sql`: Validaciones y auditoría.
-- `06_pegaso_seed.sql`: Data semilla coherente y funcional con la realidad Ecuatoriana e Internacional.
-- El proyecto en general sigue un modelo estructurado en carpetas y respeta las normativas impuestas en las guías del proyecto.
+- `06_pegaso_seed.sql`: Data semilla coherente (con pasajeros, rutas completas diarias y escenarios listos para prueba).
+- `07_pegaso_pruebas.sql`: Script de consultas secuenciales (SELECTs) diseñado específicamente para demostrar en vivo el impacto real del Frontend hacia el Backend.
+- El proyecto en general sigue un modelo estructurado en carpetas y respeta las correcciones finales y lineamientos del modelo conceptual (Rutas vs Vuelos).
