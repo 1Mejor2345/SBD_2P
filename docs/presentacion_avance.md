@@ -48,4 +48,4 @@ Toda la lógica de negocio se centralizó a través de **7 procedimientos almace
 *   `sp_asignar_tripulacion`: Asigna personal verificando la disponibilidad para las funciones operativas del vuelo.
 
 ## 8. Video de Demostración Funcional
-> *[Enlace del Video de Demostración]*
+> *[https://www.youtube.com/watch?v=PZ2f5dkD9Po]*
