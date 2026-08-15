@@ -8,9 +8,9 @@ El sistema simula el ecosistema operativo completo de una aerolínea comercial, 
 
 ## 📌 Enlaces Importantes
 
-- 🎥 **Video de Demostración:** [Ver en YouTube / Google Drive](#) *(Reemplazar con link real)*
-- 💻 **Repositorio en GitHub:** [https://github.com/usuario/SBD_2P](#) *(Reemplazar con link real)*
-- 📄 **Documentación Técnica:** Toda la documentación (incluyendo el código fuente de Overleaf, diagramas Mermaid y modelo relacional) se encuentra en la carpeta [`docs/overleaf_final/`](docs/overleaf_final/).
+- 🎥 **Video de Demostración:** [Ver en YouTube](https://youtu.be/PZ2f5dkD9Po)
+- 💻 **Repositorio en GitHub:** [https://github.com/1Mejor2345/SBD_2P](https://github.com/1Mejor2345/SBD_2P)
+- 📄 **Documentación Técnica:** [Grupo6_Documento_Final.pdf](./Grupo6_Documento_Final.pdf) (Ubicado en la raíz del repositorio). Toda la documentación de desarrollo (código Overleaf, diagramas) se encuentra en la carpeta [`docs/overleaf_final/`](docs/overleaf_final/).
 
 ---
 
