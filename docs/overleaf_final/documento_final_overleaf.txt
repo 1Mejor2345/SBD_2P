@@ -204,32 +204,40 @@
 % ══════════════════════════════════════════════════════════
 %   SECCIÓN 1: NOMBRE DEL PROYECTO Y APLICACIÓN
 % ══════════════════════════════════════════════════════════
-\section{Nombre del Proyecto y Aplicación}
+\section{Nombre del Proyecto}
 
 \begin{notabox}[Identificación del Proyecto]
 \begin{tabularx}{\linewidth}{@{}l X@{}}
-\textbf{Nombre del Proyecto:} & Pegaso --- Velocidad y Confianza en la Aviación \\
-\textbf{Nombre de la Aplicación:} & Pegaso Airlines --- Plataforma Integral de Gestión Aeronáutica \\
+\textbf{Nombre del Proyecto:} & Proyecto Pegaso: velocidad y confianza en la aviación 
+\end{tabularx}
+\end{notabox}
+
+El nombre \textbf{Pegaso} evoca al caballo alado de la mitología griega, símbolo de velocidad y elevación, valores que reflejan la misión de una aerolínea moderna: transportar pasajeros de forma rápida, segura y confiable.
+
+\section{Nombre de la Aplicación}
+
+\begin{notabox}[Identificación del Proyecto]
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\textbf{Nombre de la Aplicación:} & Pegaso Airlines: Plataforma Integral de Gestión Aeronáutica \\
 \textbf{Dominio:} & Transporte Aéreo Comercial \\
 \textbf{Motor de Base de Datos:} & MySQL 8.0+ (InnoDB) \\
 \textbf{Framework:} & Python 3.11 + Flask \\
 \end{tabularx}
 \end{notabox}
 
-El nombre \textbf{Pegaso} evoca al caballo alado de la mitología griega, símbolo de velocidad y elevación, valores que reflejan la misión de una aerolínea moderna: transportar pasajeros de forma rápida, segura y confiable. La plataforma simula el ecosistema operativo completo de una aerolínea ecuatoriana, desde la programación de rutas hasta la emisión del pase de abordar.
 
 % ══════════════════════════════════════════════════════════
 %   SECCIÓN 2: OBJETIVO GENERAL
 % ══════════════════════════════════════════════════════════
 \section{Objetivo General}
 
-Diseñar y desarrollar un sistema integral apoyado en una base de datos relacional transaccional (MySQL), que centralice, controle y valide las operaciones de la aerolínea Pegaso. El sistema resuelve problemas críticos de la industria aeronáutica:
+Diseñar y desarrollar una base de datos relacional transaccional (MySQL), que centralice, controle y valide las operaciones de la aerolínea ecuatoriana Pegaso. El sistema resuelve problemas críticos de la industria aeronáutica:
 
 \begin{itemize}[leftmargin=1.5cm]
     \item[\textcolor{pegaso-gold}{$\blacktriangleright$}] \textbf{Concurrencia:} Múltiples agentes emitiendo boletos simultáneamente sobre el mismo vuelo sin generar sobreventa no controlada, mediante bloqueos a nivel de fila (\texttt{SELECT ... FOR UPDATE}).
     \item[\textcolor{pegaso-gold}{$\blacktriangleright$}] \textbf{Integridad Referencial:} 22 tablas normalizadas con restricciones \texttt{FOREIGN KEY}, \texttt{CHECK}, \texttt{UNIQUE} y \texttt{ENUM} que imposibilitan la inserción de datos inconsistentes.
     \item[\textcolor{pegaso-gold}{$\blacktriangleright$}] \textbf{Auditoría y Regulación:} Triggers que registran automáticamente cada operación y prohíben la eliminación física de registros de pasajeros, cumpliendo con regulaciones de seguridad aeroportuaria.
-    \item[\textcolor{pegaso-gold}{$\blacktriangleright$}] \textbf{Separación Ruta vs. Vuelo:} Implementación estricta del modelo conceptual donde la \textbf{Ruta} es la entidad maestra (código de vuelo, hora, trayecto) y el \textbf{Vuelo} es una instancia de esa ruta en una fecha específica.
+    \item[\textcolor{pegaso-gold}{$\blacktriangleright$}] 
 \end{itemize}
 
 % ══════════════════════════════════════════════════════════
@@ -352,7 +360,7 @@ Muestra las 22 tablas con sus atributos, claves primarias, claves foráneas y ca
 \toprule
 \textbf{Grupo} & \textbf{Tabla} & \textbf{Propósito} & \textbf{PK} \\
 \midrule
-\multirow{4}{*}{\rotatebox{90}{\scriptsize\textbf{Infraestructura}}}
+\multirow{4}{*}{\rotatebox{90}{\scriptsize\textbf{Base}}}
  & \texttt{paises} & Catálogo ISO 3166-1 alpha-2 & \texttt{codigo\_iso} \\
  & \texttt{ciudades} & Ciudades con FK a país & \texttt{id} \\
  & \texttt{aeropuertos} & Código IATA de 3 letras, elevación & \texttt{codigo\_iata} \\
@@ -392,14 +400,44 @@ Muestra las 22 tablas con sus atributos, claves primarias, claves foráneas y ca
 \subsection{Restricciones y Constraints Destacados}
 
 \begin{itemize}[leftmargin=1.2cm]
-    \item \textbf{UNIQUE compuesto} en \texttt{boletos(vuelo\_id, numero\_asiento)} --- impide que dos pasajeros tengan el mismo asiento en un vuelo.
-    \item \textbf{CHECK} en \texttt{vuelos}: \texttt{fecha\_hora\_llegada > fecha\_hora\_salida}.
-    \item \textbf{CHECK} en \texttt{boletos}: \texttt{precio >= 0}.
-    \item \textbf{CHECK} en \texttt{equipajes}: \texttt{peso\_kg > 0}.
-    \item \textbf{CHECK} en \texttt{modelos\_avion}: \texttt{capacidad\_pasajeros > 0}.
-    \item \textbf{ON DELETE RESTRICT} en todas las FKs críticas (personas, vuelos, boletos).
-    \item \textbf{ON DELETE CASCADE} en \texttt{tripulacion\_vuelo} y \texttt{pases\_abordar} (dependencias directas).
-    \item \textbf{ON UPDATE CASCADE} en todas las FKs para propagación de cambios.
+    \item \textbf{PRIMARY KEYS (PK):} Definidas explícitamente en las 22 tablas del modelo para garantizar la identidad única de cada registro.
+    
+    \item \textbf{FOREIGN KEYS (FK) - 28 relaciones:} Destaca el uso estandarizado de \textbf{ON UPDATE CASCADE} en todas las llaves para la propagación de cambios, así como estrictos controles de eliminación:
+    \begin{itemize}
+        \item \textbf{ON DELETE RESTRICT} en la mayoría de dependencias críticas (personas, vuelos, aeropuertos, aviones, etc.) para mantener el historial intacto y soportar el modelo de soft-delete.
+        \item \textbf{ON DELETE CASCADE} en dependencias directas que deben destruirse si desaparece el padre (\texttt{tripulacion\_vuelo}, \texttt{boletos}, \texttt{asientos\_vuelo}, \texttt{pases\_abordar}).
+        \item \textbf{ON DELETE SET NULL} excepcionalmente en \texttt{asientos\_vuelo(boleto\_id)} para liberar el asiento si se cancela un boleto específico.
+    \end{itemize}
+
+    \item \textbf{UNIQUE Compuestos (8 restricciones):}
+    \begin{itemize}
+        \item \texttt{boletos(vuelo\_id, numero\_asiento)}: Impide que dos pasajeros tengan el mismo asiento.
+        \item \texttt{puertas\_embarque(aeropuerto\_iata, numero)}: Evita duplicar el número de puerta en un mismo aeropuerto.
+        \item \texttt{modelos\_avion(fabricante, modelo)} y \texttt{configuracion\_asientos(modelo\_id, fila, columna)}.
+        \item \texttt{rutas(origen\_iata, destino\_iata, hora\_salida)}: Previene rutas idénticas a la misma hora exacta.
+        \item \texttt{personas(tipo\_documento, numero\_documento, nacionalidad)}: Garantiza identidad única por documento.
+        \item \texttt{tripulacion\_vuelo(vuelo\_id, empleado\_id)}: Evita la doble asignación del mismo tripulante.
+        \item \texttt{asientos\_vuelo(vuelo\_id, configuracion\_asiento\_id)}: Bloquea la duplicidad de la configuración espacial dentro de un mismo vuelo.
+    \end{itemize}
+
+    \item \textbf{UNIQUE Simples (13 restricciones):} Implementadas para garantizar identificadores de negocio irrepetibles en campos críticos como \texttt{codigo\_vuelo}, \texttt{nombre} (para roles, clases de servicio y tarifas), \texttt{codigo\_empleado}, \texttt{numero\_licencia}, \texttt{username}, \texttt{codigo\_pnr}, \texttt{numero\_boleto}, \texttt{numero\_tag} de equipaje, y \texttt{codigo\_barras}.
+
+    \item \textbf{CHECK Constraints (7 restricciones):}
+    \begin{itemize}
+        \item En \texttt{vuelos}: \texttt{fecha\_hora\_llegada > fecha\_hora\_salida}.
+        \item En \texttt{boletos}: \texttt{precio >= 0}.
+        \item En \texttt{equipajes}: \texttt{peso\_kg > 0}.
+        \item En \texttt{modelos\_avion}: \texttt{capacidad\_pasajeros > 0}.
+        \item En \texttt{rutas}: \texttt{distancia\_km > 0} y \texttt{duracion\_estimada\_min > 0}.
+        \item En \texttt{empleados}: \texttt{salario >= 0}.
+    \end{itemize}
+
+    \item \textbf{Valores por Defecto (DEFAULT):} Implementados en la estructura para optimizar la inserción de datos y definir estados iniciales lógicos, cumpliendo con el diseño físico:
+    \begin{itemize}
+        \item \textbf{Fechas automáticas:} Uso de \texttt{DEFAULT CURRENT\_TIMESTAMP} en tablas de auditoría, reservaciones y emisión de pases de abordar.
+        \item \textbf{Estados operativos iniciales:} \texttt{estado ENUM(...) DEFAULT 'PROGRAMADO'} (vuelos), \texttt{DEFAULT 'DISPONIBLE'} (asientos y puertas), y \texttt{DEFAULT 'PENDIENTE'} (reservaciones).
+        \item \textbf{Banderas lógicas:} \texttt{esta\_activo BOOLEAN DEFAULT TRUE} aplicado en personas, empleados y usuarios para el correcto manejo de la política de soft-delete.
+    \end{itemize}
 \end{itemize}
 
 % ══════════════════════════════════════════════════════════
@@ -446,10 +484,10 @@ El frontend fue desarrollado con \textbf{Python (Flask)} + \textbf{HTML5/CSS3/Ja
 \toprule
 \textbf{CRUD} & \textbf{Método} & \textbf{Ruta} & \textbf{Acción en la BD} \\
 \midrule
-\textbf{Create} & POST & \texttt{/reservaciones/nueva} & \texttt{sp\_crear\_reservacion} + \texttt{sp\_emitir\_boleto} \\
-\textbf{Read} & GET & \texttt{/reservaciones/\{id\}} & SELECT con JOIN de 6 tablas \\
-\textbf{Update} & POST & \texttt{/reservaciones/nueva} & Agrega pasajeros/boletos \\
-\textbf{Delete} & POST & \texttt{/reservaciones/cancelar/\{id\}} & \texttt{sp\_cancelar\_reservacion} (soft-delete) \\
+\textbf{Create} & POST & \texttt{/reservaciones/nueva} & \texttt{sp\_crear\_reservacion} + \texttt{sp\_emitir\_boleto} (\texttt{INSERT} transaccional). \\
+\textbf{Read} & GET & \texttt{/reservaciones/\{id\}} & \texttt{SELECT} con \texttt{JOIN} de 6 tablas para mostrar el detalle del PNR. \\
+\textbf{Update} & POST & \texttt{/reservaciones/nueva} & Actualización de estado en BD: \texttt{UPDATE reservaciones SET estado = 'CONFIRMADA'} tras emisión de boleto. \\
+\textbf{Delete} & POST & \texttt{/reservaciones/cancelar/\{id\}} & \texttt{sp\_cancelar\_reservacion} (Soft-Delete que ejecuta un \texttt{UPDATE} a CANCELADA). \\
 \bottomrule
 \end{tabularx}
 \caption{Operaciones CRUD del módulo de Reservaciones}
@@ -457,7 +495,7 @@ El frontend fue desarrollado con \textbf{Python (Flask)} + \textbf{HTML5/CSS3/Ja
 
 \subsubsection{Cálculo Dinámico de Precios}
 
-El precio de cada boleto se calcula en el backend (nunca se confía en valores del formulario HTML) mediante la siguiente fórmula:
+El precio de cada boleto se calcula en el backend  mediante la siguiente fórmula:
 
 \[
 \text{Precio} = \underbrace{(30 + d \times 0.15)}_{\text{Precio base por distancia}} \times \underbrace{f_c}_{\text{Factor clase}} \times \underbrace{f_t}_{\text{Factor tarifa}}
@@ -598,7 +636,7 @@ El video muestra las 3 funcionalidades anteriores en acción desde el frontend, 
 % ══════════════════════════════════════════════════════════
 \section{Procedimientos Almacenados}
 
-Se implementaron \textbf{7 procedimientos almacenados}, todos con control transaccional completo (\texttt{START TRANSACTION} / \texttt{COMMIT} / \texttt{ROLLBACK}), manejo de errores (\texttt{DECLARE EXIT HANDLER FOR SQLEXCEPTION}) y bloqueos por fila (\texttt{SELECT ... FOR UPDATE}).
+Se implementaron \textbf{7 procedimientos almacenados} para soportar las operaciones críticas del sistema. Cumpliendo estrictamente con las exigencias del proyecto, todos estos procedimientos integran: \textbf{parámetros} de entrada (\texttt{IN}) y salida (\texttt{OUT}), \textbf{control transaccional} completo (\texttt{START TRANSACTION} / \texttt{COMMIT} / \texttt{ROLLBACK}), \textbf{control de errores} (\texttt{DECLARE EXIT HANDLER FOR SQLEXCEPTION}) y \textbf{control de bloqueos} por fila (\texttt{SELECT ... FOR UPDATE}) para garantizar la consistencia ante peticiones concurrentes.
 
 \begin{table}[H]
 \centering
@@ -749,28 +787,39 @@ LEFT JOIN boletos b ON v.id = b.vuelo_id
 GROUP BY v.id, r.codigo_vuelo, m.capacidad_pasajeros;
 \end{lstlisting}
 
-\subsection{Índices Optimizados (10)}
+\subsection{Índices Optimizados (10) y Consultas de Aplicación}
+
+Para garantizar la máxima eficiencia y cumplir estrictamente con los requerimientos operativos de la rúbrica, a continuación se justifican los 10 índices creados, junto con la consulta SQL exacta donde el motor InnoDB los utiliza:
 
 \begin{table}[H]
 \centering
-\small
-\begin{tabularx}{\textwidth}{l l X}
+\scriptsize % Letra más pequeña para acomodar las sentencias SQL
+\begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.5cm} >{\raggedright\arraybackslash}p{3.8cm} X}
 \toprule
-\textbf{Índice} & \textbf{Campos} & \textbf{Justificación del orden} \\
+\textbf{Índice y Campos} & \textbf{Justificación del orden} & \textbf{Consulta SQL Exacta de uso en el sistema} \\
 \midrule
-\texttt{idx\_vuelos\_fecha\_estado} & (fecha, estado) & Fecha filtra rango temporal, estado refina \\
-\texttt{idx\_boletos\_reservacion} & (reservacion\_id) & FK más consultada (detalle de PNR) \\
-\texttt{idx\_boletos\_vuelo\_estado} & (vuelo\_id, estado) & Conteo de asientos vendidos excluyendo cancelados \\
-\texttt{idx\_boletos\_pasajero} & (pasajero\_id) & Historial de viajes del pasajero \\
-\texttt{idx\_personas\_documento} & (tipo\_doc, num\_doc) & API de autocompletado por cédula \\
-\texttt{idx\_reservaciones\_pnr} & (codigo\_pnr) & Búsqueda directa en check-in \\
-\texttt{idx\_equipajes\_boleto} & (boleto\_id) & Equipajes del pasajero \\
-\texttt{idx\_tripulacion\_vuelo} & (vuelo\_id, empleado\_id) & Verificar si crew ya está asignado \\
-\texttt{idx\_vuelos\_ruta} & (ruta\_id) & Estadísticas por ruta \\
-\texttt{idx\_auditoria\_tabla\_fecha} & (tabla, fecha) & Reportes de auditoría recientes \\
+\texttt{idx\_vuelos\_fecha\_estado} \newline (fecha, estado) & \textbf{Filtro Rango + Exacto:} La fecha filtra el volumen masivo y estado refina. & \texttt{SELECT * FROM vuelos WHERE DATE(fecha\_hora\_salida) = \%s AND estado = 'PROGRAMADO'} \\
+\midrule
+\texttt{idx\_boletos\_reservacion} \newline (reservacion\_id) & \textbf{FK más consultada:} Vital para traer el detalle de boletos de un PNR. & \texttt{SELECT * FROM boletos WHERE reservacion\_id = \%s} \\
+\midrule
+\texttt{idx\_boletos\_vuelo\_estado} \newline (vuelo\_id, estado) & \textbf{Agrupación y Exclusión:} Filtra por vuelo y excluye cancelados (sobreventa). & \texttt{SELECT COUNT(*) FROM boletos WHERE vuelo\_id = \%s AND estado NOT IN ('CANCELADO')} \\
+\midrule
+\texttt{idx\_boletos\_pasajero} \newline (pasajero\_id) & \textbf{Búsqueda Directa FK:} Recupera el historial de viajes de un viajero. & \texttt{SELECT * FROM boletos b JOIN personas p ON b.pasajero\_id = p.id WHERE p.numero\_documento = \%s} \\
+\midrule
+\texttt{idx\_personas\_documento} \newline (tipo\_doc, num\_doc) & \textbf{Discriminación:} El tipo de documento evita cruces (Pasaporte vs Cédula). & \texttt{SELECT id FROM personas WHERE tipo\_documento = \%s AND numero\_documento = \%s} \\
+\midrule
+\texttt{idx\_reservaciones\_pnr} \newline (codigo\_pnr) & \textbf{Búsqueda Exacta:} Punto de entrada principal para el proceso de Check-in. & \texttt{SELECT id FROM reservaciones WHERE codigo\_pnr = \%s} \\
+\midrule
+\texttt{idx\_equipajes\_boleto} \newline (boleto\_id) & \textbf{Búsqueda FK:} Trae las maletas registradas para imprimir el pase. & \texttt{SELECT * FROM equipajes WHERE boleto\_id = \%s ORDER BY fecha\_registro} \\
+\midrule
+\texttt{idx\_tripulacion\_vuelo} \newline (vuelo\_id, empleado\_id) & \textbf{Búsqueda Compuesta:} Verifica si el crew ya está asignado al vuelo. & \texttt{SELECT COUNT(*) FROM tripulacion\_vuelo WHERE vuelo\_id = \%s AND empleado\_id = \%s} \\
+\midrule
+\texttt{idx\_vuelos\_ruta} \newline (ruta\_id) & \textbf{Agrupación FK:} Usado en la vista de estadísticas de rentabilidad por ruta. & \texttt{SELECT * FROM rutas r LEFT JOIN vuelos v ON r.id = v.ruta\_id GROUP BY r.id, ruta} \\
+\midrule
+\texttt{idx\_auditoria\_tabla\_fecha} \newline (tabla, fecha) & \textbf{Filtro Rango:} Optimiza reportes de auditoría recientes por entidad. & \texttt{SELECT * FROM auditoria WHERE tabla\_afectada = 'reservaciones' ORDER BY fecha DESC} \\
 \bottomrule
 \end{tabularx}
-\caption{Índices optimizados con justificación técnica}
+\caption{Índices optimizados, justificación técnica y mapeo de consultas SQL reales}
 \end{table}
 
 % ══════════════════════════════════════════════════════════
@@ -846,7 +895,7 @@ La base de datos se inicializa con datos coherentes del contexto ecuatoriano:
 % ══════════════════════════════════════════════════════════
 \section{Conclusiones}
 
-El proyecto Pegaso Airlines demuestra la aplicación integral de los conceptos de Sistemas de Bases de Datos en un dominio de alta criticidad operativa. Los principales logros técnicos incluyen:
+El proyecto Pegaso Airlines demuestra la aplicación de los conceptos de Sistemas de Bases de Datos en un dominio de alta criticidad operativa. Los principales logros técnicos incluyen:
 
 \begin{enumerate}[leftmargin=1.5cm]
     \item \textbf{Integridad transaccional:} Los 7 procedimientos almacenados garantizan que ninguna operación quede en estado inconsistente, incluso ante fallos o concurrencia.
