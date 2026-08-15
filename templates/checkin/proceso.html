@@ -62,12 +62,16 @@
                     {% if current_row.append(s.fila) %}{% endif %}
                 {% endif %}
                 
-                <div class="seat {{ 'occupied' if s.estado == 'OCUPADO' else 'blocked' if s.estado == 'BLOQUEADO' else 'available' }} {{ 'emergency' if s.es_salida_emergencia else '' }}"
+                {% set clase_asiento = s.clase_servicio|lower|replace('_', ' ') %}
+                {% set clase_boleto = boleto.clase|lower %}
+                {% set es_valido = s.estado == 'DISPONIBLE' and clase_asiento == clase_boleto %}
+                
+                <div class="seat {{ 'occupied' if s.estado == 'OCUPADO' else 'blocked' if s.estado == 'BLOQUEADO' else 'available' if es_valido else 'disabled-class' }} {{ 'emergency' if s.es_salida_emergencia else '' }}"
                      data-seat-id="{{ s.id }}"
                      data-seat-name="{{ s.nombre_asiento }}"
                      data-status="{{ s.estado }}"
-                     onclick="{% if s.estado == 'DISPONIBLE' %}selectSeat(this, {{ s.id }}, '{{ s.nombre_asiento }}'){% endif %}"
-                     title="{{ s.nombre_asiento }} - {{ s.clase_servicio }} {{ '(Salida de emergencia)' if s.es_salida_emergencia else '' }}">
+                     onclick="{% if es_valido %}selectSeat(this, {{ s.id }}, '{{ s.nombre_asiento }}'){% endif %}"
+                     title="{{ s.nombre_asiento }} - {{ s.clase_servicio }} {{ '(No corresponde a su clase)' if not es_valido and s.estado == 'DISPONIBLE' else '' }}">
                     {{ s.nombre_asiento }}
                 </div>
                 

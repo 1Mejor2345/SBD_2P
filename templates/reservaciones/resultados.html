@@ -59,11 +59,12 @@
                     {% if t.prioridad_embarque %}<li>✅ Prioridad embarque</li>{% endif %}
                 </ul>
                 <div class="fare-price">
-                    {% set base_price = 85.00 %}
+                    {% set base_price = 30 + (v.distancia_km * 0.15) %}
                     {% set clase = clases[0] if clases else None %}
-                    ${{ "%.2f"|format(base_price * (loop.index * 0.8 + 0.5)) }}
+                    {% set factor_tarifa = 1.0 + (loop.index0 * 0.2) %}
+                    ${{ "%.2f"|format(base_price * clase.factor_precio * factor_tarifa) }}
                 </div>
-                <a href="{{ url_for('nueva_reservacion', vuelo_id=v.id, tarifa_id=t.id, clase_id=1) }}" class="btn btn-{{ 'primary' if loop.index == 2 else 'outline' }}" style="width: 100%;">
+                <a href="{{ url_for('nueva_reservacion', vuelo_id=v.id, tarifa_id=t.id, clase_id=clase.id) }}" class="btn btn-{{ 'primary' if loop.index == 2 else 'outline' }}" style="width: 100%;">
                     Seleccionar
                 </a>
             </div>

@@ -111,6 +111,11 @@ BEGIN
     DECLARE v_estado_asiento VARCHAR(20);
     DECLARE v_fecha_salida DATETIME;
     DECLARE v_asiento_nom VARCHAR(4);
+    DECLARE v_clase_boleto VARCHAR(50);
+    DECLARE v_clase_asiento VARCHAR(50);
+    DECLARE v_vuelo_id INT;
+    DECLARE v_puerta VARCHAR(10);
+    DECLARE v_secuencia SMALLINT;
     
     DECLARE EXIT HANDLER FOR SQLEXCEPTION 
     BEGIN
@@ -120,12 +125,19 @@ BEGIN
     
     START TRANSACTION;
     
-    SELECT b.estado, v.fecha_hora_salida INTO v_estado_boleto, v_fecha_salida
-    FROM boletos b JOIN vuelos v ON b.vuelo_id = v.id
+    SELECT b.estado, v.fecha_hora_salida, REPLACE(UPPER(cs.nombre), ' ', '_'), v.id, pe.numero
+    INTO v_estado_boleto, v_fecha_salida, v_clase_boleto, v_vuelo_id, v_puerta
+    FROM boletos b 
+    JOIN vuelos v ON b.vuelo_id = v.id
+    JOIN clases_servicio cs ON b.clase_servicio_id = cs.id
+    LEFT JOIN puertas_embarque pe ON v.puerta_embarque_id = pe.id
     WHERE b.id = p_boleto_id FOR UPDATE;
     
-    SELECT estado INTO v_estado_asiento
-    FROM asientos_vuelo WHERE id = p_asiento_vuelo_id FOR UPDATE;
+    SELECT av.estado, c.clase_servicio
+    INTO v_estado_asiento, v_clase_asiento
+    FROM asientos_vuelo av
+    JOIN configuracion_asientos c ON av.configuracion_asiento_id = c.id
+    WHERE av.id = p_asiento_vuelo_id FOR UPDATE;
     
     IF v_estado_boleto != 'EMITIDO' THEN
         SET p_resultado = 'ERROR: El boleto no está emitido.';
@@ -136,19 +148,25 @@ BEGIN
     ELSEIF v_estado_asiento != 'DISPONIBLE' THEN
         SET p_resultado = 'ERROR: El asiento no está disponible.';
         ROLLBACK;
+    ELSEIF v_clase_boleto != v_clase_asiento THEN
+        SET p_resultado = 'ERROR: El asiento seleccionado no corresponde a su clase de servicio.';
+        ROLLBACK;
     ELSE
         -- Obtener nombre de asiento
-        SELECT CONCAT(c.fila, c.columna) INTO v_asiento_nom
-        FROM asientos_vuelo av JOIN configuracion_asientos c ON av.configuracion_asiento_id = c.id
-        WHERE av.id = p_asiento_vuelo_id;
+        SET v_asiento_nom = (SELECT CONCAT(c.fila, c.columna) FROM asientos_vuelo av JOIN configuracion_asientos c ON av.configuracion_asiento_id = c.id WHERE av.id = p_asiento_vuelo_id);
         
         UPDATE boletos SET estado = 'CHECKIN', numero_asiento = v_asiento_nom WHERE id = p_boleto_id;
         UPDATE asientos_vuelo SET estado = 'OCUPADO', boleto_id = p_boleto_id WHERE id = p_asiento_vuelo_id;
         
         SET p_codigo_barras = UPPER(MD5(CONCAT(p_boleto_id, RAND())));
         
-        INSERT INTO pases_abordar (boleto_id, asiento_vuelo_id, codigo_barras)
-        VALUES (p_boleto_id, p_asiento_vuelo_id, p_codigo_barras);
+        SELECT COALESCE(MAX(pa.secuencia_embarque), 0) + 1 INTO v_secuencia
+        FROM pases_abordar pa
+        JOIN boletos b2 ON pa.boleto_id = b2.id
+        WHERE b2.vuelo_id = v_vuelo_id;
+        
+        INSERT INTO pases_abordar (boleto_id, asiento_vuelo_id, codigo_barras, secuencia_embarque, puerta)
+        VALUES (p_boleto_id, p_asiento_vuelo_id, p_codigo_barras, v_secuencia, v_puerta);
         
         SET p_resultado = 'EXITO: Check-in realizado.';
         COMMIT;
@@ -166,6 +184,7 @@ CREATE PROCEDURE sp_registrar_equipaje(
 BEGIN
     DECLARE v_estado VARCHAR(20);
     DECLARE v_peso_permitido DECIMAL(5,2);
+    DECLARE v_peso_actual DECIMAL(5,2);
     
     DECLARE EXIT HANDLER FOR SQLEXCEPTION 
     BEGIN
@@ -179,8 +198,14 @@ BEGIN
     FROM boletos b JOIN familias_tarifa f ON b.familia_tarifa_id = f.id
     WHERE b.id = p_boleto_id;
     
+    SELECT COALESCE(SUM(peso_kg), 0) INTO v_peso_actual
+    FROM equipajes WHERE boleto_id = p_boleto_id AND tipo = 'BODEGA';
+    
     IF v_estado IN ('CANCELADO', 'NO_SHOW') THEN
         SET p_resultado = 'ERROR: Boleto cancelado o pasajero no show.';
+        ROLLBACK;
+    ELSEIF p_tipo = 'BODEGA' AND (v_peso_actual + p_peso_kg) > v_peso_permitido THEN
+        SET p_resultado = CONCAT('ERROR: El equipaje de bodega excede el límite de su tarifa (', v_peso_permitido, 'kg).');
         ROLLBACK;
     ELSE
         SET p_numero_tag = CONCAT('PG', LPAD(FLOOR(RAND() * 99999999), 8, '0'));

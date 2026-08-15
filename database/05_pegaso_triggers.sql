@@ -69,8 +69,8 @@ BEGIN
         SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El peso del equipaje debe ser mayor a 0.';
     END IF;
     
-    IF NEW.tipo = 'BODEGA' AND NEW.peso_kg > 50 THEN
-        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El peso máximo para bodega es de 50kg.';
+    IF NEW.tipo = 'BODEGA' AND NEW.peso_kg > 32 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'El peso máximo por pieza de equipaje de bodega es de 32kg (Regulación Ocupacional).';
     END IF;
     
     IF NEW.tipo = 'CABINA' AND NEW.peso_kg > 10 THEN

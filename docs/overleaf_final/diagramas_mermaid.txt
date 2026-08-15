@@ -1,0 +1,386 @@
+%% ==========================================
+%% DIAGRAMA 1: Entidad-Relacion (22 Tablas)
+%% COPIA DESDE AQUI (erDiagram) HASTA EL SIGUIENTE CORTE
+%% ==========================================
+erDiagram
+    paises ||--o{ ciudades : "tiene"
+    paises ||--o{ personas : "nacionalidad"
+    ciudades ||--o{ aeropuertos : "alberga"
+    aeropuertos ||--o{ puertas_embarque : "tiene"
+    aeropuertos ||--o{ rutas : "origen"
+    aeropuertos ||--o{ rutas : "destino"
+
+    modelos_avion ||--o{ aviones : "tipo"
+    modelos_avion ||--o{ configuracion_asientos : "layout"
+
+    rutas ||--o{ vuelos : "instancia"
+    aviones ||--o{ vuelos : "opera"
+    puertas_embarque ||--o{ vuelos : "asignada"
+
+    personas ||--o| empleados : "es"
+    personas ||--o| usuarios : "accede"
+    roles ||--o{ usuarios : "define"
+    empleados ||--o{ tripulacion_vuelo : "asignado"
+    vuelos ||--o{ tripulacion_vuelo : "requiere"
+
+    vuelos ||--o{ boletos : "vende"
+    vuelos ||--o{ asientos_vuelo : "mapa"
+    configuracion_asientos ||--o{ asientos_vuelo : "plantilla"
+    personas ||--o{ boletos : "pasajero"
+    reservaciones ||--o{ boletos : "agrupa"
+    usuarios ||--o{ reservaciones : "crea"
+    clases_servicio ||--o{ boletos : "clase"
+    familias_tarifa ||--o{ boletos : "tarifa"
+
+    boletos ||--o{ equipajes : "registra"
+    boletos ||--o| pases_abordar : "genera"
+    asientos_vuelo ||--o| pases_abordar : "asigna"
+    boletos ||--o| asientos_vuelo : "ocupa"
+
+    paises {
+        CHAR2 codigo_iso PK
+        VARCHAR nombre
+    }
+    ciudades {
+        INT id PK
+        VARCHAR nombre
+        CHAR2 pais_codigo FK
+    }
+    aeropuertos {
+        CHAR3 codigo_iata PK
+        VARCHAR nombre
+        INT ciudad_id FK
+        INT elevacion_ft
+    }
+    puertas_embarque {
+        INT id PK
+        CHAR3 aeropuerto_iata FK
+        VARCHAR numero
+        ENUM estado
+    }
+    modelos_avion {
+        INT id PK
+        VARCHAR fabricante
+        VARCHAR modelo
+        SMALLINT capacidad_pasajeros
+        INT alcance_km
+    }
+    aviones {
+        VARCHAR matricula PK
+        INT modelo_id FK
+        YEAR anio_fabricacion
+        ENUM estado
+    }
+    configuracion_asientos {
+        INT id PK
+        INT modelo_id FK
+        SMALLINT fila
+        CHAR columna
+        ENUM clase_servicio
+        BOOLEAN es_salida_emergencia
+    }
+    rutas {
+        INT id PK
+        VARCHAR codigo_vuelo UK
+        CHAR3 origen_iata FK
+        CHAR3 destino_iata FK
+        TIME hora_salida
+        INT distancia_km
+        INT duracion_estimada_min
+        BOOLEAN esta_activa
+    }
+    roles {
+        INT id PK
+        VARCHAR nombre UK
+    }
+    personas {
+        INT id PK
+        ENUM tipo_documento
+        VARCHAR numero_documento
+        VARCHAR nombres
+        VARCHAR apellidos
+        VARCHAR email
+        DATE fecha_nacimiento
+        CHAR2 nacionalidad FK
+        BOOLEAN esta_activo
+    }
+    empleados {
+        INT persona_id PK
+        VARCHAR codigo_empleado UK
+        ENUM cargo
+        VARCHAR numero_licencia
+        DECIMAL salario
+    }
+    usuarios {
+        INT id PK
+        INT persona_id FK
+        VARCHAR username UK
+        VARCHAR hash_contrasena
+        INT rol_id FK
+    }
+    clases_servicio {
+        INT id PK
+        VARCHAR nombre UK
+        DECIMAL factor_precio
+    }
+    familias_tarifa {
+        INT id PK
+        VARCHAR nombre UK
+        BOOLEAN incluye_equipaje_bodega
+        DECIMAL peso_equipaje_incluido_kg
+        BOOLEAN incluye_seleccion_asiento
+        BOOLEAN es_reembolsable
+    }
+    vuelos {
+        INT id PK
+        INT ruta_id FK
+        DATE fecha_vuelo
+        VARCHAR avion_matricula FK
+        DATETIME fecha_hora_salida
+        DATETIME fecha_hora_llegada
+        ENUM estado
+        INT puerta_embarque_id FK
+        SMALLINT limite_sobreventa
+    }
+    tripulacion_vuelo {
+        INT id PK
+        INT vuelo_id FK
+        INT empleado_id FK
+        ENUM funcion
+    }
+    reservaciones {
+        INT id PK
+        CHAR6 codigo_pnr UK
+        DATETIME fecha_creacion
+        ENUM estado
+        VARCHAR contacto_email
+        INT usuario_creador_id FK
+    }
+    boletos {
+        INT id PK
+        CHAR13 numero_boleto UK
+        INT reservacion_id FK
+        INT pasajero_id FK
+        INT vuelo_id FK
+        INT clase_servicio_id FK
+        INT familia_tarifa_id FK
+        VARCHAR numero_asiento
+        DECIMAL precio
+        ENUM estado
+    }
+    asientos_vuelo {
+        INT id PK
+        INT vuelo_id FK
+        INT configuracion_asiento_id FK
+        INT boleto_id FK
+        ENUM estado
+    }
+    equipajes {
+        INT id PK
+        INT boleto_id FK
+        CHAR10 numero_tag UK
+        DECIMAL peso_kg
+        ENUM tipo
+        ENUM estado_tracking
+    }
+    pases_abordar {
+        INT id PK
+        INT boleto_id FK
+        INT asiento_vuelo_id FK
+        VARCHAR codigo_barras UK
+        SMALLINT secuencia_embarque
+        VARCHAR puerta
+    }
+    auditoria {
+        INT id PK
+        VARCHAR tabla_afectada
+        INT registro_id
+        ENUM accion
+        JSON datos_anteriores
+        JSON datos_nuevos
+        VARCHAR usuario
+        DATETIME fecha
+    }
+
+%% ==========================================
+%% DIAGRAMA 2: Arquitectura del Sistema
+%% COPIA DESDE graph HASTA EL SIGUIENTE CORTE
+%% ==========================================
+graph TB
+    subgraph PRESENTACION ["Capa de Presentación"]
+        A["🌐 Navegador Web<br/>HTML5 + CSS3 + JS"]
+    end
+
+    subgraph APLICACION ["Capa de Aplicación"]
+        B["🐍 Flask (Python 3.11)<br/>Jinja2 Templates<br/>Session Management"]
+        C["🔐 Middleware<br/>login_required<br/>role_required"]
+    end
+
+    subgraph DATOS ["Capa de Acceso a Datos"]
+        D["🔌 mysql-connector-python<br/>Connection Pool (5)"]
+    end
+
+    subgraph BDD ["Capa de Base de Datos"]
+        E["🗄️ MySQL 8.0+ InnoDB<br/>pegaso_airlines"]
+        F["⚙️ Stored Procedures (7)<br/>FOR UPDATE Locks"]
+        G["🛡️ Triggers (7)<br/>Validación + Auditoría"]
+        H["📊 Views (6)<br/>Reportes Consolidados"]
+        I["🔍 Indexes (10)<br/>Optimización de Consultas"]
+    end
+
+    A -->|"HTTP Request"| B
+    B --> C
+    C -->|"callproc() / execute()"| D
+    D -->|"TCP 3306"| E
+    E --- F
+    E --- G
+    E --- H
+    E --- I
+
+    style A fill:#E8F4FD,stroke:#0F2B46,color:#0F2B46
+    style B fill:#0F2B46,stroke:#C9A84C,color:#fff
+    style C fill:#1A3A5C,stroke:#C9A84C,color:#fff
+    style D fill:#2C5282,stroke:#C9A84C,color:#fff
+    style E fill:#C9A84C,stroke:#0F2B46,color:#0F2B46
+    style F fill:#FFF3CD,stroke:#C9A84C,color:#0F2B46
+    style G fill:#FFF3CD,stroke:#C9A84C,color:#0F2B46
+    style H fill:#FFF3CD,stroke:#C9A84C,color:#0F2B46
+    style I fill:#FFF3CD,stroke:#C9A84C,color:#0F2B46
+
+
+%% ==========================================
+%% DIAGRAMA 3: Flujo de Reservaciones (CRUD 1)
+%% COPIA DESDE flowchart HASTA EL SIGUIENTE CORTE
+%% ==========================================
+flowchart TD
+    A["🔍 Viajero busca vuelos<br/>Origen → Destino + Fecha"] --> B{"¿Vuelos<br/>disponibles?"}
+    B -->|No| C["Sin resultados.<br/>Buscar de nuevo."]
+    B -->|Sí| D["Mostrar vuelos con<br/>asientos disponibles"]
+    D --> E["Ver Tarifas ▼<br/>Light · Standard · Full · Flex"]
+    E --> F["Seleccionar tarifa"]
+    F --> G["Formulario de Reservación"]
+    G --> H["Ingresar Nº Documento"]
+    H --> I{"¿Pasajero<br/>frecuente?"}
+    I -->|Sí| J["🔍 API autocompleta datos<br/>desde tabla personas"]
+    I -->|No| K["Llenar datos manualmente"]
+    J --> L["Confirmar Reservación"]
+    K --> L
+    L --> M["Backend: calcular_precio_backend()<br/>precio = (30 + distancia×0.15) × clase × tarifa"]
+    M --> N["SP: sp_crear_reservacion<br/>Genera PNR aleatorio (6 chars)"]
+    N --> O["SP: sp_emitir_boleto<br/>SELECT ... FOR UPDATE<br/>Valida capacidad + sobreventa"]
+    O --> P{"¿Capacidad<br/>OK?"}
+    P -->|No| Q["ERROR: Vuelo lleno"]
+    P -->|Sí| R["✅ Reservación CONFIRMADA<br/>PNR + Boleto emitido"]
+
+    style A fill:#E8F4FD,stroke:#0F2B46
+    style R fill:#D4EDDA,stroke:#28A745
+    style Q fill:#F8D7DA,stroke:#DC3545
+    style M fill:#FFF3CD,stroke:#C9A84C
+    style N fill:#CCE5FF,stroke:#004085
+    style O fill:#CCE5FF,stroke:#004085
+
+
+%% ==========================================
+%% DIAGRAMA 4: Flujo de Check-in (CRUD 2)
+%% COPIA DESDE flowchart HASTA EL SIGUIENTE CORTE
+%% ==========================================
+flowchart TD
+    A["📋 Agente busca<br/>por PNR o Apellido"] --> B["Mostrar boletos<br/>de la reservación"]
+    B --> C["Seleccionar boleto<br/>para check-in"]
+    C --> D{"¿Estado<br/>= EMITIDO?"}
+    D -->|No| E["ERROR: Boleto ya procesado"]
+    D -->|Sí| F{"¿Dentro de<br/>ventana 48h?"}
+    F -->|No| G["ERROR: Check-in no disponible aún"]
+    F -->|Sí| H["💺 Mostrar Mapa de Asientos"]
+    H --> I["Asientos filtrados<br/>por CLASE del boleto"]
+    I --> J["Pasajero selecciona asiento"]
+    J --> K["SP: sp_checkin_pasajero<br/>FOR UPDATE sobre boleto + asiento"]
+    K --> L{"¿Clase del asiento<br/>= Clase del boleto?"}
+    L -->|No| M["ERROR: Asiento no corresponde<br/>a su clase de servicio"]
+    L -->|Sí| N["UPDATE boleto → CHECKIN<br/>UPDATE asiento → OCUPADO"]
+    N --> O["Calcular secuencia_embarque<br/>Extraer puerta_embarque"]
+    O --> P["INSERT pases_abordar<br/>Código de barras MD5"]
+    P --> Q["🎫 Pase de Abordar generado"]
+    Q --> R["🧳 Registrar Equipaje<br/>(Opcional)"]
+    R --> S{"¿Peso ≤ franquicia<br/>de tarifa?"}
+    S -->|Sí| T["✅ Tag IATA generado<br/>(máx 32kg/pieza)"]
+    S -->|No| U["ERROR: Excede límite<br/>de su tarifa"]
+
+    style A fill:#E8F4FD,stroke:#0F2B46
+    style Q fill:#D4EDDA,stroke:#28A745
+    style T fill:#D4EDDA,stroke:#28A745
+    style E fill:#F8D7DA,stroke:#DC3545
+    style G fill:#F8D7DA,stroke:#DC3545
+    style M fill:#F8D7DA,stroke:#DC3545
+    style U fill:#F8D7DA,stroke:#DC3545
+    style K fill:#CCE5FF,stroke:#004085
+
+
+%% ==========================================
+%% DIAGRAMA 5: Jerarquía de Roles
+%% COPIA DESDE graph HASTA EL SIGUIENTE CORTE
+%% ==========================================
+graph TD
+    ADMIN["🔑 Administrador<br/>━━━━━━━━━━<br/>• Dashboard Global<br/>• Gestión de Flota<br/>• Gestión de Personal<br/>• Reservaciones<br/>• Check-in<br/>• Vuelos"]
+    
+    SUPER["👨‍✈️ Supervisor<br/>━━━━━━━━━━<br/>• Programar Vuelos<br/>• Asignar Tripulación<br/>• Cambiar Estado Vuelo<br/>• Ver Reservaciones"]
+    
+    AGENT["📋 Agente<br/>━━━━━━━━━━<br/>• Buscar Vuelos<br/>• Crear Reservaciones<br/>• Proceso Check-in<br/>• Registrar Equipaje<br/>• Emitir Boarding Pass"]
+    
+    VIAJERO["✈️ Viajero<br/>━━━━━━━━━━<br/>• Buscar Vuelos<br/>• Mis Reservaciones<br/>• Ver Mis Boletos"]
+
+    ADMIN --- SUPER
+    ADMIN --- AGENT
+    ADMIN --- VIAJERO
+
+    style ADMIN fill:#0F2B46,stroke:#C9A84C,color:#fff
+    style SUPER fill:#1A3A5C,stroke:#C9A84C,color:#fff
+    style AGENT fill:#2C5282,stroke:#C9A84C,color:#fff
+    style VIAJERO fill:#E8F4FD,stroke:#0F2B46,color:#0F2B46
+
+
+%% ==========================================
+%% DIAGRAMA 6: Ciclo de Vida del Vuelo
+%% COPIA DESDE stateDiagram-v2 HASTA EL SIGUIENTE CORTE
+%% ==========================================
+stateDiagram-v2
+    [*] --> PROGRAMADO : Supervisor crea vuelo
+    PROGRAMADO --> EMBARQUE : Inicia embarque
+    PROGRAMADO --> RETRASADO : Retraso operacional
+    PROGRAMADO --> CANCELADO : Cancelar vuelo
+    RETRASADO --> EMBARQUE : Se resuelve
+    RETRASADO --> CANCELADO : No se resuelve
+    EMBARQUE --> EN_VUELO : Cierre de puertas
+    EN_VUELO --> ATERRIZADO : Toca pista
+    ATERRIZADO --> ARRIBADO : Pasajeros desembarcan
+    CANCELADO --> [*]
+    ARRIBADO --> [*]
+
+    note right of CANCELADO
+        Al cancelar un vuelo
+        todos sus boletos pasan
+        automáticamente a CANCELADO
+        (sp_cambiar_estado_vuelo)
+    end note
+
+
+%% ==========================================
+%% DIAGRAMA 7: Flujo de Gestión de Vuelos (CRUD 3)
+%% COPIA DESDE flowchart HASTA EL FINAL
+%% ==========================================
+flowchart TD
+    A["👨‍✈️ Supervisor accede<br/>al módulo Vuelos"] --> B["Ver tabla de vuelos<br/>con filtro por estado"]
+    B --> C["+ Programar Vuelo"]
+    C --> D["Seleccionar Ruta Maestra<br/>PG101 | UIO→GYE | 10:00"]
+    D --> E["La ruta define:<br/>• Código de vuelo<br/>• Hora de salida<br/>• Duración estimada"]
+    E --> F["Seleccionar:<br/>• Fecha del vuelo<br/>• Avión (matrícula)<br/>• Puerta de embarque"]
+    F --> G["Backend calcula:<br/>fecha_hora_salida + duración<br/>= fecha_hora_llegada"]
+    G --> H["INSERT INTO vuelos"]
+    H --> I["Trigger: trg_generar_asientos_vuelo<br/>Crea 180 asientos automáticamente"]
+    I --> J["✅ Vuelo programado"]
+    J --> K["Asignar Tripulación<br/>Comandante + Primer Oficial<br/>+ Sobrecargos"]
+
+    style D fill:#FFF3CD,stroke:#C9A84C
+    style E fill:#FFF3CD,stroke:#C9A84C
+    style I fill:#CCE5FF,stroke:#004085
+    style J fill:#D4EDDA,stroke:#28A745

@@ -1,0 +1,861 @@
+% ══════════════════════════════════════════════════════════
+% DOCUMENTO FINAL — PROYECTO PEGASO AIRLINES
+% Sistemas de Bases de Datos — Fase Final
+% Grupo No. 6
+% ══════════════════════════════════════════════════════════
+\documentclass[12pt, a4paper]{article}
+
+% ─── PAQUETES ────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\geometry{top=2.5cm, bottom=2.5cm, left=2.5cm, right=2.5cm}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{titlesec}
+\usepackage{fancyhdr}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{listings}
+\usepackage{tcolorbox}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{setspace}
+\usepackage{parskip}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{pdflscape}
+
+% ─── COLORES CORPORATIVOS ────────────────────────────────
+\definecolor{pegaso-navy}{HTML}{0F2B46}
+\definecolor{pegaso-gold}{HTML}{C9A84C}
+\definecolor{pegaso-blue}{HTML}{2C5282}
+\definecolor{pegaso-light}{HTML}{E8F4FD}
+\definecolor{pegaso-gray}{HTML}{6B7280}
+\definecolor{pegaso-bg}{HTML}{F8FAFC}
+\definecolor{code-bg}{HTML}{F5F5F5}
+\definecolor{success}{HTML}{28A745}
+\definecolor{danger}{HTML}{DC3545}
+
+% ─── CONFIGURACIÓN DE HIPERVÍNCULOS ─────────────────────
+\hypersetup{
+    colorlinks=true,
+    linkcolor=pegaso-navy,
+    urlcolor=pegaso-blue,
+    citecolor=pegaso-navy,
+    pdfauthor={Grupo 6},
+    pdftitle={Proyecto Pegaso Airlines — Documento Final},
+}
+
+% ─── HEADERS Y FOOTERS ──────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{pegaso-gray}{Proyecto Pegaso Airlines}}
+\fancyhead[R]{\small\textcolor{pegaso-gray}{Grupo 6 — SBD Fase Final}}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ─── FORMATO DE SECCIONES ───────────────────────────────
+\titleformat{\section}
+  {\Large\bfseries\color{pegaso-navy}}
+  {\thesection.}{0.5em}{}
+  [\vspace{-0.5em}\textcolor{pegaso-gold}{\rule{\textwidth}{1.5pt}}]
+
+\titleformat{\subsection}
+  {\large\bfseries\color{pegaso-blue}}
+  {\thesubsection}{0.5em}{}
+
+\titleformat{\subsubsection}
+  {\normalsize\bfseries\color{pegaso-navy}}
+  {\thesubsubsection}{0.5em}{}
+
+% ─── CAJAS DESTACADAS ────────────────────────────────────
+\tcbuselibrary{skins, breakable}
+
+\newtcolorbox{notabox}[1][]{
+  colback=pegaso-light,
+  colframe=pegaso-navy,
+  fonttitle=\bfseries,
+  title=#1,
+  arc=2pt,
+  left=8pt, right=8pt,
+  boxrule=0.8pt,
+  breakable
+}
+
+\newtcolorbox{alerta}[1][]{
+  colback=red!5,
+  colframe=danger,
+  fonttitle=\bfseries,
+  title=#1,
+  arc=2pt,
+  left=8pt, right=8pt,
+  boxrule=0.8pt
+}
+
+\newtcolorbox{exito}[1][]{
+  colback=green!5,
+  colframe=success,
+  fonttitle=\bfseries,
+  title=#1,
+  arc=2pt,
+  left=8pt, right=8pt,
+  boxrule=0.8pt
+}
+
+% ─── CONFIGURACIÓN DE LISTINGS (SQL) ────────────────────
+\lstdefinestyle{sqlstyle}{
+    language=SQL,
+    backgroundcolor=\color{code-bg},
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\bfseries\color{pegaso-navy},
+    stringstyle=\color{success},
+    commentstyle=\itshape\color{pegaso-gray},
+    showstringspaces=false,
+    breaklines=true,
+    frame=single,
+    rulecolor=\color{pegaso-gold},
+    numbers=left,
+    numberstyle=\tiny\color{pegaso-gray},
+    numbersep=8pt,
+    tabsize=4,
+    morekeywords={DELIMITER, SIGNAL, SQLSTATE, HANDLER, SQLEXCEPTION, ENUM, BOOLEAN, DECLARE, ELSEIF, COALESCE, JSON_OBJECT, CURRENT_USER},
+    literate={á}{{\'a}}1 {é}{{\'e}}1 {í}{{\'i}}1 {ó}{{\'o}}1 {ú}{{\'u}}1 {ñ}{{\~n}}1 {Á}{{\'A}}1 {É}{{\'E}}1 {Í}{{\'I}}1 {Ó}{{\'O}}1 {Ú}{{\'U}}1
+}
+\lstset{style=sqlstyle}
+
+% ─── COMANDO PARA TABLAS ────────────────────────────────
+\newcolumntype{L}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+
+% ══════════════════════════════════════════════════════════
+%                    INICIO DEL DOCUMENTO
+% ══════════════════════════════════════════════════════════
+\begin{document}
+
+% ─── PORTADA ─────────────────────────────────────────────
+\begin{titlepage}
+\begin{tikzpicture}[remember picture, overlay]
+    % Fondo
+    \fill[pegaso-navy] (current page.south west) rectangle (current page.north east);
+    % Franja dorada diagonal
+    \fill[pegaso-gold, opacity=0.15] 
+        ([yshift=-8cm]current page.north west) -- 
+        ([yshift=-12cm]current page.north east) -- 
+        ([yshift=-16cm]current page.north east) -- 
+        ([yshift=-12cm]current page.north west) -- cycle;
+    % Línea dorada inferior
+    \fill[pegaso-gold] 
+        ([yshift=3.5cm]current page.south west) rectangle 
+        ([yshift=3.65cm]current page.south east);
+    % Línea dorada superior delgada
+    \fill[pegaso-gold] 
+        ([yshift=-2cm]current page.north west) rectangle 
+        ([yshift=-2.1cm]current page.north east);
+\end{tikzpicture}
+
+\vspace*{1.5cm}
+\begin{center}
+    \includegraphics[width=9.5cm]{logo_espol.png}\\[0.5cm]
+    {\fontsize{14}{16}\selectfont\color{pegaso-gold}\textbf{ESCUELA SUPERIOR POLITÉCNICA DEL LITORAL}}\\[0.3cm]
+    {\fontsize{11}{13}\selectfont\color{white}Facultad de Ingeniería en Electricidad y Computación}\\[0.2cm]
+    {\fontsize{10}{12}\selectfont\color{white!70}Sistemas de Bases de Datos — Fase Final}\\[1.5cm]
+    
+    {\fontsize{42}{48}\selectfont\color{white}\textbf{PEGASO}}\\[0.2cm]
+    {\fontsize{12}{14}\selectfont\color{pegaso-gold}A\,I\,R\,L\,I\,N\,E\,S}\\[0.5cm]
+    {\color{pegaso-gold}\rule{8cm}{1.5pt}}\\[0.8cm]
+    {\fontsize{14}{16}\selectfont\color{white}Sistema Integral de Gestión Aeronáutica}\\[0.3cm]
+    {\fontsize{11}{13}\selectfont\color{white!70}Velocidad y Confianza en la Aviación}\\[1.8cm]
+    
+    {\fontsize{10}{13}\selectfont\color{white!85}
+    \begin{tabular}{rl}
+        \textbf{Grupo:} & No. 6 \\[0.2cm]
+        \textbf{Integrantes:} & Santiago Rubén Gómez Medina \\
+                              & Fanny Marcela López Ramos \\
+                              & José Luis Paladines Sánchez \\
+                              & Bruno Alejandro Román Torres \\
+                              & Matías Ariel Sánchez Baldeón \\[0.2cm]
+        \textbf{Profesora:} & Ph.D. Patricia Leonor Suárez Riofrío \\[0.2cm]
+        \textbf{Paralelo:} & 4 \\[0.2cm]
+        \textbf{Término:} & I PAO 2026 \\
+    \end{tabular}}
+\end{center}
+
+\vfill
+\begin{center}
+    {\small\color{white!50}Guayaquil, Ecuador — 15 de Agosto de 2026}
+\end{center}
+\end{titlepage}
+
+% ─── TABLA DE CONTENIDOS ────────────────────────────────
+\newpage
+\thispagestyle{empty}
+\tableofcontents
+\newpage
+
+% ══════════════════════════════════════════════════════════
+%   SECCIÓN 1: NOMBRE DEL PROYECTO Y APLICACIÓN
+% ══════════════════════════════════════════════════════════
+\section{Nombre del Proyecto y Aplicación}
+
+\begin{notabox}[Identificación del Proyecto]
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\textbf{Nombre del Proyecto:} & Pegaso --- Velocidad y Confianza en la Aviación \\
+\textbf{Nombre de la Aplicación:} & Pegaso Airlines --- Plataforma Integral de Gestión Aeronáutica \\
+\textbf{Dominio:} & Transporte Aéreo Comercial \\
+\textbf{Motor de Base de Datos:} & MySQL 8.0+ (InnoDB) \\
+\textbf{Framework:} & Python 3.11 + Flask \\
+\end{tabularx}
+\end{notabox}
+
+El nombre \textbf{Pegaso} evoca al caballo alado de la mitología griega, símbolo de velocidad y elevación, valores que reflejan la misión de una aerolínea moderna: transportar pasajeros de forma rápida, segura y confiable. La plataforma simula el ecosistema operativo completo de una aerolínea ecuatoriana, desde la programación de rutas hasta la emisión del pase de abordar.
+
+% ══════════════════════════════════════════════════════════
+%   SECCIÓN 2: OBJETIVO GENERAL
+% ══════════════════════════════════════════════════════════
+\section{Objetivo General}
+
+Diseñar y desarrollar un sistema integral apoyado en una base de datos relacional transaccional (MySQL), que centralice, controle y valide las operaciones de la aerolínea Pegaso. El sistema resuelve problemas críticos de la industria aeronáutica:
+
+\begin{itemize}[leftmargin=1.5cm]
+    \item[\textcolor{pegaso-gold}{$\blacktriangleright$}] \textbf{Concurrencia:} Múltiples agentes emitiendo boletos simultáneamente sobre el mismo vuelo sin generar sobreventa no controlada, mediante bloqueos a nivel de fila (\texttt{SELECT ... FOR UPDATE}).
+    \item[\textcolor{pegaso-gold}{$\blacktriangleright$}] \textbf{Integridad Referencial:} 22 tablas normalizadas con restricciones \texttt{FOREIGN KEY}, \texttt{CHECK}, \texttt{UNIQUE} y \texttt{ENUM} que imposibilitan la inserción de datos inconsistentes.
+    \item[\textcolor{pegaso-gold}{$\blacktriangleright$}] \textbf{Auditoría y Regulación:} Triggers que registran automáticamente cada operación y prohíben la eliminación física de registros de pasajeros, cumpliendo con regulaciones de seguridad aeroportuaria.
+    \item[\textcolor{pegaso-gold}{$\blacktriangleright$}] \textbf{Separación Ruta vs. Vuelo:} Implementación estricta del modelo conceptual donde la \textbf{Ruta} es la entidad maestra (código de vuelo, hora, trayecto) y el \textbf{Vuelo} es una instancia de esa ruta en una fecha específica.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════
+%   SECCIÓN 3: FUNCIONALIDADES DEL SISTEMA
+% ══════════════════════════════════════════════════════════
+\section{Funcionalidades del Sistema}
+
+El sistema cubre el ciclo operativo completo de una aerolínea a través de 22 funcionalidades agrupadas en cuatro módulos.
+
+\subsection{Módulo de Reservaciones (7 funcionalidades)}
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{c L{3cm} X}
+\toprule
+\textbf{\#} & \textbf{Funcionalidad} & \textbf{Descripción} \\
+\midrule
+F01 & Búsqueda de vuelos & Por origen/destino, fecha y número de pasajeros. Incluye búsqueda rápida por Ruta Maestra. \\
+F02 & Creación de PNR & Código alfanumérico único de 6 caracteres generado aleatoriamente. \\
+F03 & Emisión de e-tickets & Boletos electrónicos de 13 dígitos vinculados a la reservación. \\
+F04 & Selección de tarifa & Familias Light, Standard, Full y Flex con beneficios diferenciados. \\
+F05 & Autocompletado & Consulta en tiempo real (API REST) la tabla \texttt{personas} por número de cédula. \\
+F06 & Precios dinámicos & Cálculo basado en distancia de la ruta $\times$ factor de clase $\times$ factor de tarifa. \\
+F07 & Cancelación & Soft-delete: cambia estado a CANCELADA, libera asientos. \\
+\bottomrule
+\end{tabularx}
+\caption{Funcionalidades del Módulo de Reservaciones}
+\end{table}
+
+\subsection{Módulo de Check-in y Equipaje (5 funcionalidades)}
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{c L{3cm} X}
+\toprule
+\textbf{\#} & \textbf{Funcionalidad} & \textbf{Descripción} \\
+\midrule
+F08 & Búsqueda check-in & Por código PNR o apellido del pasajero. \\
+F09 & Proceso check-in & Validación de ventana de 48 horas y estado del boleto. \\
+F10 & Mapa de asientos & Visualización interactiva del avión. \textbf{Solo muestra asientos de la clase pagada} (Economy no puede seleccionar Business). \\
+F11 & Registro equipaje & Tag IATA de 10 dígitos, máximo \textbf{32 kg por pieza} (regulación ocupacional). Valida contra franquicia de la tarifa. \\
+F12 & Pase de abordar & Boarding pass con código de barras, puerta, secuencia de embarque y clase. \\
+\bottomrule
+\end{tabularx}
+\caption{Funcionalidades del Módulo de Check-in}
+\end{table}
+
+\subsection{Módulo de Vuelos y Tripulación (5 funcionalidades)}
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{c L{3cm} X}
+\toprule
+\textbf{\#} & \textbf{Funcionalidad} & \textbf{Descripción} \\
+\midrule
+F13 & Programar vuelo & Supervisor selecciona la \textbf{Ruta Maestra} (no digita código ni hora) y solo elige la fecha y el avión. \\
+F14 & Estados de vuelo & Transiciones: Programado $\rightarrow$ Embarque $\rightarrow$ En Vuelo $\rightarrow$ Aterrizado $\rightarrow$ Arribado. \\
+F15 & Tripulación & Asignación de Comandante, Primer Oficial y Sobrecargos. \\
+F16 & Manifiesto & Lista completa de pasajeros por vuelo con asiento, clase y equipaje. \\
+F17 & Ocupación & Porcentaje de ocupación e ingresos por vuelo en tiempo real. \\
+\bottomrule
+\end{tabularx}
+\caption{Funcionalidades del Módulo de Vuelos}
+\end{table}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{diagrama5.png}
+    \caption{Máquina de estados y ciclo de vida de un Vuelo}
+\end{figure}
+
+\subsection{Módulo de Administración (5 funcionalidades)}
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{c L{3cm} X}
+\toprule
+\textbf{\#} & \textbf{Funcionalidad} & \textbf{Descripción} \\
+\midrule
+F18 & Gestión de flota & Alta de aeronaves con matrícula ecuatoriana (HC-), estado operativo. \\
+F19 & Gestión de personal & Registro de pilotos (con licencia), sobrecargos y agentes. \\
+F20 & Dashboard por rol & Panel diferenciado: Admin ve todo, Viajero solo sus reservas. \\
+F21 & Control de acceso & 4 roles: Administrador, Supervisor, Agente, Viajero. \\
+F22 & Auditoría & Registro automático en tabla \texttt{auditoria} con datos JSON. \\
+\bottomrule
+\end{tabularx}
+\caption{Funcionalidades del Módulo de Administración}
+\end{table}
+
+% ══════════════════════════════════════════════════════════
+%   SECCIÓN 4: MODELO FÍSICO DE BASE DE DATOS
+% ══════════════════════════════════════════════════════════
+\section{Modelo Físico de Base de Datos}
+
+La base de datos \texttt{pegaso\_airlines} consta de \textbf{22 tablas} rigurosamente normalizadas hasta la Tercera Forma Normal (3FN), utilizando el motor \textbf{InnoDB} para garantizar transacciones ACID.
+
+\subsection{Diagrama Entidad-Relación}
+
+\begin{notabox}[Nota sobre el diagrama]
+Muestra las 22 tablas con sus atributos, claves primarias, claves foráneas y cardinalidades.
+\end{notabox}
+
+% ─── INSERTAR IMAGEN DEL ER AQUÍ ─────────────────────────
+\begin{landscape}
+\begin{figure}[p]
+    \centering
+    \makebox[\linewidth][c]{
+        \includegraphics[width=\linewidth,height=0.95\textheight,keepaspectratio]{ERR_Diagram.png}
+    }
+    \caption{Diagrama Entidad-Relación de la base de datos \texttt{pegaso\_airlines} (Modelo Lógico completo)}
+\end{figure}
+\end{landscape}
+
+\subsection{Organización de las 22 Tablas}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l l X c}
+\toprule
+\textbf{Grupo} & \textbf{Tabla} & \textbf{Propósito} & \textbf{PK} \\
+\midrule
+\multirow{4}{*}{\rotatebox{90}{\scriptsize\textbf{Infraestructura}}}
+ & \texttt{paises} & Catálogo ISO 3166-1 alpha-2 & \texttt{codigo\_iso} \\
+ & \texttt{ciudades} & Ciudades con FK a país & \texttt{id} \\
+ & \texttt{aeropuertos} & Código IATA de 3 letras, elevación & \texttt{codigo\_iata} \\
+ & \texttt{puertas\_embarque} & Gates por aeropuerto con estado & \texttt{id} \\
+\midrule
+\multirow{3}{*}{\rotatebox{90}{\scriptsize\textbf{Flota}}}
+ & \texttt{modelos\_avion} & Airbus, Boeing, Embraer con alcance & \texttt{id} \\
+ & \texttt{aviones} & Matrícula ecuatoriana HC-XXX & \texttt{matricula} \\
+ & \texttt{config\_asientos} & Layout: fila, columna, clase, emergencia & \texttt{id} \\
+\midrule
+\multirow{4}{*}{\rotatebox{90}{\scriptsize\textbf{Personas}}}
+ & \texttt{personas} & Supertipo. Nunca se elimina (trigger) & \texttt{id} \\
+ & \texttt{empleados} & Subtipo: cargo, licencia, salario & \texttt{persona\_id} \\
+ & \texttt{roles} & Admin, Supervisor, Agente, Viajero & \texttt{id} \\
+ & \texttt{usuarios} & Username + hash + rol + último acceso & \texttt{id} \\
+\midrule
+\multirow{3}{*}{\rotatebox{90}{\scriptsize\textbf{Vuelos}}}
+ & \texttt{rutas} & Entidad maestra: código, hora, distancia & \texttt{id} \\
+ & \texttt{vuelos} & Instancia: ruta + fecha + avión + estado & \texttt{id} \\
+ & \texttt{tripulacion\_vuelo} & Asignación crew con función & \texttt{id} \\
+\midrule
+\multirow{7}{*}{\rotatebox{90}{\scriptsize\textbf{Comercial}}}
+ & \texttt{clases\_servicio} & Economy, Premium, Business, First & \texttt{id} \\
+ & \texttt{familias\_tarifa} & Light, Standard, Full, Flex & \texttt{id} \\
+ & \texttt{reservaciones} & PNR de 6 caracteres, estado & \texttt{id} \\
+ & \texttt{boletos} & E-ticket de 13 dígitos, precio & \texttt{id} \\
+ & \texttt{asientos\_vuelo} & Mapa dinámico: disponible/ocupado & \texttt{id} \\
+ & \texttt{equipajes} & Tag IATA 10 dígitos, tracking & \texttt{id} \\
+ & \texttt{pases\_abordar} & Código barras, secuencia, puerta & \texttt{id} \\
+\midrule
+ & \texttt{auditoria} & Log JSON de INSERT/UPDATE/DELETE & \texttt{id} \\
+\bottomrule
+\end{tabularx}
+\caption{Inventario de las 22 tablas de \texttt{pegaso\_airlines}}
+\end{table}
+
+\subsection{Restricciones y Constraints Destacados}
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item \textbf{UNIQUE compuesto} en \texttt{boletos(vuelo\_id, numero\_asiento)} --- impide que dos pasajeros tengan el mismo asiento en un vuelo.
+    \item \textbf{CHECK} en \texttt{vuelos}: \texttt{fecha\_hora\_llegada > fecha\_hora\_salida}.
+    \item \textbf{CHECK} en \texttt{boletos}: \texttt{precio >= 0}.
+    \item \textbf{CHECK} en \texttt{equipajes}: \texttt{peso\_kg > 0}.
+    \item \textbf{CHECK} en \texttt{modelos\_avion}: \texttt{capacidad\_pasajeros > 0}.
+    \item \textbf{ON DELETE RESTRICT} en todas las FKs críticas (personas, vuelos, boletos).
+    \item \textbf{ON DELETE CASCADE} en \texttt{tripulacion\_vuelo} y \texttt{pases\_abordar} (dependencias directas).
+    \item \textbf{ON UPDATE CASCADE} en todas las FKs para propagación de cambios.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════
+%   SECCIÓN 5: IMPLEMENTACIÓN FUNCIONAL (FRONTEND)
+% ══════════════════════════════════════════════════════════
+\section{Implementación Funcional (Frontend)}
+
+El frontend fue desarrollado con \textbf{Python (Flask)} + \textbf{HTML5/CSS3/JavaScript puro}, siguiendo una arquitectura MVC con herencia de templates Jinja2. El diseño visual utiliza una paleta corporativa azul marino (\texttt{\#0F2B46}) y dorado (\texttt{\#C9A84C}), inspirada en aerolíneas latinoamericanas.
+
+\begin{notabox}[Stack Tecnológico]
+\begin{tabularx}{\linewidth}{@{}l X@{}}
+\textbf{Backend:} & Python 3.11 + Flask + Jinja2 \\
+\textbf{Frontend:} & HTML5, CSS3 (1{,}449 líneas), JavaScript ES6 (164 líneas) \\
+\textbf{Conexión BD:} & mysql-connector-python con pool de 5 conexiones \\
+\textbf{Autenticación:} & Sessions + werkzeug.security (SHA-256 / bcrypt) \\
+\textbf{Templates:} & 21 archivos HTML en 5 directorios \\
+\end{tabularx}
+\end{notabox}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{diagrama1.png}
+    \caption{Arquitectura del Sistema y Patrón MVC}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \includegraphics[width=\linewidth]{login.png}
+        \caption{Pantalla de Acceso}
+    \end{minipage}\hfill
+    \begin{minipage}{0.48\textwidth}
+        \includegraphics[width=\linewidth]{dashboard.png}
+        \caption{Dashboard principal diferenciado por Rol}
+    \end{minipage}
+\end{figure}
+
+\subsection{CRUD 1: Gestión de Reservaciones}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l l l X}
+\toprule
+\textbf{CRUD} & \textbf{Método} & \textbf{Ruta} & \textbf{Acción en la BD} \\
+\midrule
+\textbf{Create} & POST & \texttt{/reservaciones/nueva} & \texttt{sp\_crear\_reservacion} + \texttt{sp\_emitir\_boleto} \\
+\textbf{Read} & GET & \texttt{/reservaciones/\{id\}} & SELECT con JOIN de 6 tablas \\
+\textbf{Update} & POST & \texttt{/reservaciones/nueva} & Agrega pasajeros/boletos \\
+\textbf{Delete} & POST & \texttt{/reservaciones/cancelar/\{id\}} & \texttt{sp\_cancelar\_reservacion} (soft-delete) \\
+\bottomrule
+\end{tabularx}
+\caption{Operaciones CRUD del módulo de Reservaciones}
+\end{table}
+
+\subsubsection{Cálculo Dinámico de Precios}
+
+El precio de cada boleto se calcula en el backend (nunca se confía en valores del formulario HTML) mediante la siguiente fórmula:
+
+\[
+\text{Precio} = \underbrace{(30 + d \times 0.15)}_{\text{Precio base por distancia}} \times \underbrace{f_c}_{\text{Factor clase}} \times \underbrace{f_t}_{\text{Factor tarifa}}
+\]
+
+Donde $d$ es la distancia en kilómetros de la ruta, $f_c$ es el factor de la clase de servicio (Economy = 1.00, Premium = 1.50, Business = 2.50, First = 4.00) y $f_t$ varía según la familia tarifaria (Light = 1.0, Standard = 1.2, Full = 1.4, Flex = 1.6).
+
+\begin{exito}[Ejemplo real del sistema]
+\textbf{UIO $\rightarrow$ GYE} (280 km): \$72.00 base $\times$ 1.00 (Economy) $\times$ 1.2 (Standard) = \textbf{\$86.40} \\
+\textbf{UIO $\rightarrow$ MIA} (2{,}880 km): \$462.00 base $\times$ 2.50 (Business) $\times$ 1.4 (Full) = \textbf{\$1{,}617.00}
+\end{exito}
+
+% ─── INSERTAR CAPTURAS DE PANTALLA AQUÍ ──────────────────
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{diagrama2.png}
+    \caption{Flujo de proceso del Módulo de Reservaciones}
+\end{figure}
+
+\subsection{CRUD 2: Check-in y Equipaje}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l l l X}
+\toprule
+\textbf{CRUD} & \textbf{Método} & \textbf{Ruta} & \textbf{Acción en la BD} \\
+\midrule
+\textbf{Create} & POST & \texttt{/checkin/proceso/\{id\}} & \texttt{sp\_checkin\_pasajero} (check-in + pase) \\
+\textbf{Read} & GET & \texttt{/checkin/pase/\{id\}} & SELECT con JOIN de 9 tablas \\
+\textbf{Update} & POST & \texttt{/checkin/equipaje/\{id\}} & \texttt{sp\_registrar\_equipaje} \\
+\textbf{Delete} & N/A & --- & No permitido (regulación de seguridad) \\
+\bottomrule
+\end{tabularx}
+\caption{Operaciones CRUD del módulo de Check-in}
+\end{table}
+
+\begin{alerta}[Validaciones de Seguridad Aeronáutica]
+\begin{itemize}[leftmargin=0.5cm]
+    \item El mapa de asientos \textbf{filtra por clase}: un pasajero Economy no puede seleccionar asientos de Business (validado en frontend y en el SP).
+    \item El peso máximo por pieza de equipaje de bodega es \textbf{32 kg} (regulación de salud ocupacional para estibadores, IATA).
+    \item El equipaje se valida contra la \textbf{franquicia de la tarifa} (Light = 0 kg, Standard = 23 kg, Full = 46 kg, Flex = 64 kg).
+    \item La secuencia de embarque se calcula \textbf{automáticamente} incrementando por vuelo.
+\end{itemize}
+\end{alerta}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{diagrama3.png}
+    \caption{Flujo del proceso de Check-in y Equipaje}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{asientos.png}
+    \caption{Selección de asientos (Validación estricta por Clase de Servicio)}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \includegraphics[width=\linewidth]{resgistro_equipaje.png}
+        \caption{Registro validando peso máximo de equipaje (32kg)}
+    \end{minipage}\hfill
+    \begin{minipage}{0.48\textwidth}
+        \includegraphics[width=\linewidth]{boarding_pass.png}
+        \caption{Pase de abordar con datos de puerta y secuencia}
+    \end{minipage}
+\end{figure}
+
+\subsection{CRUD 3: Gestión de Vuelos y Tripulación}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l l l X}
+\toprule
+\textbf{CRUD} & \textbf{Método} & \textbf{Ruta} & \textbf{Acción en la BD} \\
+\midrule
+\textbf{Create} & POST & \texttt{/vuelos/nuevo} & INSERT + trigger genera 180 asientos \\
+\textbf{Read} & GET & \texttt{/vuelos/\{id\}} & Manifiesto con tripulación y pasajeros \\
+\textbf{Update} & POST & \texttt{/vuelos/estado/\{id\}} & \texttt{sp\_cambiar\_estado\_vuelo} \\
+\textbf{Delete} & POST & \texttt{/vuelos/tripulacion/eliminar} & DELETE FROM tripulacion\_vuelo \\
+\bottomrule
+\end{tabularx}
+\caption{Operaciones CRUD del módulo de Vuelos}
+\end{table}
+
+\begin{notabox}[Distinción Ruta vs. Vuelo]
+El Supervisor \textbf{nunca digita} el código de vuelo ni la hora de salida. Al seleccionar la Ruta Maestra (ej. \texttt{PG101 | Quito $\rightarrow$ Guayaquil | 10:00}), el sistema autocompleta esos campos. El Supervisor solo elige la \textbf{fecha} y el \textbf{avión}, porque el Vuelo es simplemente una instancia de la Ruta en un día específico.
+\end{notabox}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{diagrama6.png}
+    \caption{Flujo de instanciación de un Vuelo a partir de una Ruta Maestra}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.85\textwidth]{gestion_vuelos.png}
+    \caption{Interfaz del Supervisor para programar Vuelos}
+\end{figure}
+
+\subsection{Módulo de Administración}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{0.48\textwidth}
+        \includegraphics[width=\linewidth]{gestion_flota.png}
+        \caption{Gestión de Flota (Aviones y Estados)}
+    \end{minipage}\hfill
+    \begin{minipage}{0.48\textwidth}
+        \includegraphics[width=\linewidth]{gestion_personal.png}
+        \caption{Gestión de Personal y Licencias}
+    \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=1\textwidth]{diagrama4.png}
+    \caption{Jerarquía de roles y control de acceso del sistema}
+\end{figure}
+
+% ══════════════════════════════════════════════════════════
+%   SECCIÓN 6: VIDEO
+% ══════════════════════════════════════════════════════════
+\section{Video de Demostración Funcional}
+
+El video muestra las 3 funcionalidades anteriores en acción desde el frontend, seguidas inmediatamente de una consulta \texttt{SELECT} en MySQL Workbench para evidenciar que las transacciones y los bloqueos funcionaron correctamente en la base de datos.
+
+\begin{center}
+\textbf{[Pegar aquí el enlace de YouTube / Google Drive del video]}
+\end{center}
+
+% ══════════════════════════════════════════════════════════
+%   SECCIÓN 7: PROCEDIMIENTOS ALMACENADOS
+% ══════════════════════════════════════════════════════════
+\section{Procedimientos Almacenados}
+
+Se implementaron \textbf{7 procedimientos almacenados}, todos con control transaccional completo (\texttt{START TRANSACTION} / \texttt{COMMIT} / \texttt{ROLLBACK}), manejo de errores (\texttt{DECLARE EXIT HANDLER FOR SQLEXCEPTION}) y bloqueos por fila (\texttt{SELECT ... FOR UPDATE}).
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l X c c}
+\toprule
+\textbf{Procedimiento} & \textbf{Propósito} & \textbf{FOR UPDATE} & \textbf{Params OUT} \\
+\midrule
+\texttt{sp\_crear\_reservacion} & Genera PNR único de 6 chars, valida email & No & PNR, resultado \\
+\texttt{sp\_emitir\_boleto} & Emite e-ticket de 13 dígitos, valida capacidad + sobreventa & \textbf{Sí} & boleto, resultado \\
+\texttt{sp\_checkin\_pasajero} & Check-in con asiento, valida clase, genera boarding pass & \textbf{Sí} & código barras, resultado \\
+\texttt{sp\_registrar\_equipaje} & Tag IATA, valida franquicia de tarifa y peso $\leq$ 32kg & No & tag, resultado \\
+\texttt{sp\_cancelar\_reservacion} & Soft-delete: cancela reserva + boletos + libera asientos & \textbf{Sí} & resultado \\
+\texttt{sp\_cambiar\_estado\_vuelo} & Transición de estados, cancela boletos si vuelo cancelado & No & resultado \\
+\texttt{sp\_asignar\_tripulacion} & Asigna crew validando duplicados & No & resultado \\
+\bottomrule
+\end{tabularx}
+\caption{Resumen de los 7 procedimientos almacenados}
+\end{table}
+
+\subsubsection{Ejemplo: \texttt{sp\_emitir\_boleto} (Control de Sobreventa)}
+
+\begin{lstlisting}
+-- Bloqueo exclusivo sobre el registro del vuelo
+SELECT estado, limite_sobreventa INTO v_estado_vuelo, v_limite_sobreventa
+FROM vuelos WHERE id = p_vuelo_id FOR UPDATE;
+
+-- Conteo de boletos activos
+SELECT COUNT(*) INTO v_vendidos 
+FROM boletos WHERE vuelo_id = p_vuelo_id AND estado NOT IN ('CANCELADO');
+
+-- Validacion de capacidad + politica de sobreventa
+IF (v_vendidos >= (v_capacidad + v_limite_sobreventa)) THEN
+    SET p_resultado = 'ERROR: Capacidad maxima excedida.';
+    ROLLBACK;
+END IF;
+\end{lstlisting}
+
+\subsubsection{Ejemplo: \texttt{sp\_checkin\_pasajero} (Validación de Clase)}
+
+\begin{lstlisting}
+-- Obtener clase del boleto
+SELECT REPLACE(UPPER(cs.nombre), ' ', '_')
+INTO v_clase_boleto
+FROM boletos b 
+JOIN clases_servicio cs ON b.clase_servicio_id = cs.id
+WHERE b.id = p_boleto_id FOR UPDATE;
+
+-- Obtener clase del asiento seleccionado
+SELECT c.clase_servicio INTO v_clase_asiento
+FROM asientos_vuelo av
+JOIN configuracion_asientos c ON av.configuracion_asiento_id = c.id
+WHERE av.id = p_asiento_vuelo_id FOR UPDATE;
+
+-- Validacion cruzada: la clase debe coincidir
+IF v_clase_boleto != v_clase_asiento THEN
+    SET p_resultado = 'ERROR: El asiento no corresponde a su clase.';
+    ROLLBACK;
+END IF;
+\end{lstlisting}
+
+% ══════════════════════════════════════════════════════════
+%   SECCIÓN 8: DISPARADORES (TRIGGERS)
+% ══════════════════════════════════════════════════════════
+\section{Disparadores (Triggers)}
+
+Se implementaron \textbf{7 triggers} clasificados en tres categorías funcionales:
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{c l c c X}
+\toprule
+\textbf{\#} & \textbf{Trigger} & \textbf{Evento} & \textbf{Timing} & \textbf{Justificación} \\
+\midrule
+1 & \texttt{trg\_audit\_reserv\_ins} & INSERT reservaciones & AFTER & Trazabilidad comercial: registra PNR y estado \\
+2 & \texttt{trg\_audit\_reserv\_upd} & UPDATE reservaciones & AFTER & Cumplimiento regulatorio: estado anterior vs. nuevo \\
+3 & \texttt{trg\_validar\_capacidad} & INSERT boletos & BEFORE & Integridad: bloquea venta si se excede capacidad \\
+4 & \texttt{trg\_audit\_boleto\_upd} & UPDATE boletos & AFTER & Ciclo de vida: EMITIDO $\rightarrow$ CHECKIN $\rightarrow$ ABORDADO \\
+5 & \texttt{trg\_validar\_peso} & INSERT equipajes & BEFORE & Regulación IATA: $\leq$ 32 kg bodega, $\leq$ 10 kg cabina \\
+6 & \texttt{trg\_proteger\_persona} & DELETE personas & BEFORE & Seguridad aeroportuaria: impide eliminación física \\
+7 & \texttt{trg\_generar\_asientos} & INSERT vuelos & AFTER & Operacional: genera mapa de 180 asientos automáticamente \\
+\bottomrule
+\end{tabularx}
+\caption{Inventario de los 7 triggers}
+\end{table}
+
+\subsubsection{Ejemplo: Protección contra eliminación física}
+
+\begin{lstlisting}
+CREATE TRIGGER trg_proteger_eliminacion_persona
+BEFORE DELETE ON personas
+FOR EACH ROW
+BEGIN
+    SIGNAL SQLSTATE '45000'
+    SET MESSAGE_TEXT = 'No se permite la eliminacion fisica 
+    de personas. Use desactivacion (esta_activo = FALSE)';
+END;
+\end{lstlisting}
+
+Esta restricción es crítica en la industria aeronáutica: las autoridades de aviación civil pueden requerir el historial completo de un pasajero años después de su viaje. El sistema utiliza \textbf{eliminación lógica} (campo \texttt{esta\_activo = FALSE}) en lugar de \texttt{DELETE}.
+
+% ══════════════════════════════════════════════════════════
+%   SECCIÓN 9: CONSULTAS SQL Y VISTAS
+% ══════════════════════════════════════════════════════════
+\section{Consultas SQL y Vistas}
+
+\subsection{Vistas Implementadas (6)}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{c l X c}
+\toprule
+\textbf{\#} & \textbf{Vista} & \textbf{Propósito} & \textbf{JOINs} \\
+\midrule
+1 & \texttt{vw\_itinerario\_vuelos} & Vuelos con ruta, avión, puerta y \textbf{asientos disponibles} calculados en tiempo real & 7 \\
+2 & \texttt{vw\_manifiesto\_pasajeros} & Lista de pasajeros por vuelo con boleto, asiento y cantidad de equipajes & 4 \\
+3 & \texttt{vw\_ocupacion\_vuelos} & Porcentaje de ocupación, ingresos totales y pasajeros chequeados & 4 \\
+4 & \texttt{vw\_historial\_reservaciones} & Historial de PNRs con pasajeros, boletos y vuelos asociados & 5 \\
+5 & \texttt{vw\_disponibilidad\_tripulacion} & Empleados activos disponibles para asignación & 2 \\
+6 & \texttt{vw\_estadisticas\_rutas} & Frecuencia, ocupación promedio e ingresos por ruta & 3 \\
+\bottomrule
+\end{tabularx}
+\caption{Vistas del sistema con complejidad de JOINs}
+\end{table}
+
+\subsubsection{Ejemplo: Vista de Ocupación de Vuelos}
+
+\begin{lstlisting}
+CREATE OR REPLACE VIEW vw_ocupacion_vuelos AS
+SELECT 
+    v.id AS vuelo_id,
+    r.codigo_vuelo AS numero_vuelo,
+    m.capacidad_pasajeros AS capacidad_total,
+    COUNT(b.id) AS boletos_vendidos,
+    SUM(CASE WHEN b.estado IN ('CHECKIN','ABORDADO','COMPLETADO') 
+        THEN 1 ELSE 0 END) AS pasajeros_chequeados,
+    ROUND((COUNT(b.id) / m.capacidad_pasajeros) * 100, 2) 
+        AS porcentaje_ocupacion,
+    SUM(b.precio) AS ingresos_totales
+FROM vuelos v
+JOIN rutas r ON v.ruta_id = r.id
+JOIN aviones a ON v.avion_matricula = a.matricula
+JOIN modelos_avion m ON a.modelo_id = m.id
+LEFT JOIN boletos b ON v.id = b.vuelo_id 
+    AND b.estado NOT IN ('CANCELADO', 'NO_SHOW')
+GROUP BY v.id, r.codigo_vuelo, m.capacidad_pasajeros;
+\end{lstlisting}
+
+\subsection{Índices Optimizados (10)}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Índice} & \textbf{Campos} & \textbf{Justificación del orden} \\
+\midrule
+\texttt{idx\_vuelos\_fecha\_estado} & (fecha, estado) & Fecha filtra rango temporal, estado refina \\
+\texttt{idx\_boletos\_reservacion} & (reservacion\_id) & FK más consultada (detalle de PNR) \\
+\texttt{idx\_boletos\_vuelo\_estado} & (vuelo\_id, estado) & Conteo de asientos vendidos excluyendo cancelados \\
+\texttt{idx\_boletos\_pasajero} & (pasajero\_id) & Historial de viajes del pasajero \\
+\texttt{idx\_personas\_documento} & (tipo\_doc, num\_doc) & API de autocompletado por cédula \\
+\texttt{idx\_reservaciones\_pnr} & (codigo\_pnr) & Búsqueda directa en check-in \\
+\texttt{idx\_equipajes\_boleto} & (boleto\_id) & Equipajes del pasajero \\
+\texttt{idx\_tripulacion\_vuelo} & (vuelo\_id, empleado\_id) & Verificar si crew ya está asignado \\
+\texttt{idx\_vuelos\_ruta} & (ruta\_id) & Estadísticas por ruta \\
+\texttt{idx\_auditoria\_tabla\_fecha} & (tabla, fecha) & Reportes de auditoría recientes \\
+\bottomrule
+\end{tabularx}
+\caption{Índices optimizados con justificación técnica}
+\end{table}
+
+% ══════════════════════════════════════════════════════════
+%   SECCIÓN 10: ORGANIZACIÓN DEL PROYECTO
+% ══════════════════════════════════════════════════════════
+\section{Organización y Documentación del Proyecto}
+
+\subsection{Estructura de Carpetas}
+
+\begin{lstlisting}[language={}, basicstyle=\ttfamily\small, frame=none, backgroundcolor=\color{white}]
+pegaso/
+|-- database/
+|   |-- 01_pegaso_schema.sql        (22 tablas, PKs, FKs, CHECKs)
+|   |-- 02_pegaso_indexes.sql       (10 indices con justificacion)
+|   |-- 03_pegaso_views.sql         (6 vistas)
+|   |-- 04_pegaso_procedures.sql    (7 stored procedures)
+|   |-- 05_pegaso_triggers.sql      (7 triggers)
+|   |-- 06_pegaso_seed.sql          (data semilla Ecuador)
+|   |-- 07_pegaso_pruebas.sql       (script de demo en vivo)
+|-- templates/                      (21 archivos Jinja2)
+|   |-- layout.html                 (plantilla base)
+|   |-- dashboard.html              (panel por rol)
+|   |-- reservaciones/              (5 templates)
+|   |-- checkin/                    (5 templates)
+|   |-- vuelos/                     (4 templates)
+|   |-- admin/                      (4 templates)
+|-- static/
+|   |-- css/style.css               (1,449 lineas)
+|   |-- js/app.js                   (164 lineas)
+|   |-- fondo-avion.jpg             (login background)
+|-- app.py                          (996 lineas, 19 rutas)
+|-- requirements.txt                (4 dependencias)
+|-- .env                            (configuracion MySQL)
+\end{lstlisting}
+
+\subsection{Convenciones de Nomenclatura}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{l l X}
+\toprule
+\textbf{Elemento} & \textbf{Convención} & \textbf{Ejemplo} \\
+\midrule
+Tablas & snake\_case plural & \texttt{reservaciones}, \texttt{pases\_abordar} \\
+PKs & \texttt{id} o clave natural & \texttt{codigo\_iata}, \texttt{matricula} \\
+FKs & \texttt{fk\_tabla\_ref} & \texttt{fk\_vuelos\_ruta} \\
+Índices & \texttt{idx\_tabla\_campos} & \texttt{idx\_vuelos\_fecha\_estado} \\
+SPs & \texttt{sp\_accion} & \texttt{sp\_crear\_reservacion} \\
+Triggers & \texttt{trg\_accion\_tabla} & \texttt{trg\_validar\_peso\_equipaje} \\
+Vistas & \texttt{vw\_descripcion} & \texttt{vw\_ocupacion\_vuelos} \\
+\bottomrule
+\end{tabularx}
+\caption{Convenciones de nomenclatura SQL}
+\end{table}
+
+\subsection{Data Semilla}
+
+La base de datos se inicializa con datos coherentes del contexto ecuatoriano:
+
+\begin{itemize}[leftmargin=1.2cm]
+    \item \textbf{9 países} de la región (Ecuador, Colombia, Perú, EE.UU., México, Panamá, Brasil, Chile, Argentina)
+    \item \textbf{14 ciudades} con \textbf{14 aeropuertos} reales (UIO, GYE, CUE, GPS, MEC, LOH, BOG, LIM, MIA, MEX, PTY, GRU, SCL, EZE)
+    \item \textbf{4 modelos de avión}: Airbus A320 (180 pax), A319 (144), Boeing 737-800 (189), Embraer E190 (100)
+    \item \textbf{8 aviones} con matrícula ecuatoriana (HC-CPA a HC-CPH)
+    \item \textbf{180 asientos} por A320: filas 1-3 Business, 4-12 Premium Economy, 13-30 Economy
+    \item \textbf{8 rutas} operadas (4 frecuencias diarias UIO-GYE + rutas internacionales)
+    \item \textbf{50 vuelos} pre-programados para julio y agosto 2026
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════
+%   CONCLUSIONES
+% ══════════════════════════════════════════════════════════
+\section{Conclusiones}
+
+El proyecto Pegaso Airlines demuestra la aplicación integral de los conceptos de Sistemas de Bases de Datos en un dominio de alta criticidad operativa. Los principales logros técnicos incluyen:
+
+\begin{enumerate}[leftmargin=1.5cm]
+    \item \textbf{Integridad transaccional:} Los 7 procedimientos almacenados garantizan que ninguna operación quede en estado inconsistente, incluso ante fallos o concurrencia.
+    
+    \item \textbf{Seguridad multinivel:} Desde el frontend (roles, sesiones) hasta el backend (triggers, constraints), cada capa del sistema valida de manera independiente las reglas de negocio.
+    
+    \item \textbf{Realismo aeronáutico:} El sistema refleja fielmente las operaciones de una aerolínea comercial: códigos PNR estándar, tags IATA de equipaje, límites regulatorios de peso (32 kg), control de sobreventa, clases diferenciadas y auditoría completa.
+    
+    \item \textbf{Arquitectura escalable:} La separación entre Ruta (entidad maestra) y Vuelo (instancia) permite escalar a múltiples frecuencias diarias sin redundancia de datos.
+\end{enumerate}
+
+\end{document}

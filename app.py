@@ -243,6 +243,18 @@ def dashboard():
     
     return render_template('dashboard.html', stats=stats, proximos_vuelos=proximos_vuelos, mis_reservaciones=mis_reservaciones)
 
+def calcular_precio_backend(vuelo_id, clase_id, tarifa_id):
+    ruta = execute_query("SELECT r.distancia_km FROM vuelos v JOIN rutas r ON v.ruta_id = r.id WHERE v.id = %s", (vuelo_id,), fetchone=True)
+    clase = execute_query("SELECT factor_precio FROM clases_servicio WHERE id = %s", (clase_id,), fetchone=True)
+    if not ruta or not clase:
+        return 0.0
+    
+    distancia = ruta['distancia_km']
+    factor_clase = float(clase['factor_precio'])
+    base_price = 30 + (distancia * 0.15)
+    factor_tarifa = 1.0 + (int(tarifa_id) - 1) * 0.2
+    return round(base_price * factor_clase * factor_tarifa, 2)
+
 # ─── CRUD 1: RESERVACIONES ───────────────────────────────────────
 @app.route('/reservaciones/buscar')
 @login_required
@@ -281,7 +293,7 @@ def resultados_vuelos():
         """SELECT v.id, r.codigo_vuelo AS numero_vuelo, v.fecha_hora_salida, v.fecha_hora_llegada,
                   ao.codigo_iata AS origen_iata, ad.codigo_iata AS destino_iata,
                   co.nombre AS ciudad_origen, cd.nombre AS ciudad_destino,
-                  r.duracion_estimada_min, ma.modelo AS avion_modelo,
+                  r.duracion_estimada_min, r.distancia_km, ma.modelo AS avion_modelo,
                   ma.capacidad_pasajeros,
                   (SELECT COUNT(*) FROM boletos b WHERE b.vuelo_id = v.id AND b.estado NOT IN ('CANCELADO','NO_SHOW')) AS boletos_vendidos,
                   v.limite_sobreventa
@@ -335,7 +347,9 @@ def nueva_reservacion():
         vuelo_id = request.form.get('vuelo_id')
         clase_id = request.form.get('clase_servicio_id', 1)
         tarifa_id = request.form.get('familia_tarifa_id', 1)
-        precio = request.form.get('precio', 0)
+        
+        # Calcular precio real en backend
+        precio = calcular_precio_backend(vuelo_id, clase_id, tarifa_id)
         
         # Datos del pasajero
         tipo_doc = request.form.get('tipo_documento')
