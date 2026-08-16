@@ -628,7 +628,7 @@ El Supervisor \textbf{nunca digita} el código de vuelo ni la hora de salida. Al
 El video muestra las 3 funcionalidades anteriores en acción desde el frontend, seguidas inmediatamente de una consulta \texttt{SELECT} en MySQL Workbench para evidenciar que las transacciones y los bloqueos funcionaron correctamente en la base de datos.
 
 \begin{center}
-\textbf{Enlace del video:} \url{https://youtu.be/PZ2f5dkD9Po}
+\textbf{Enlace del video:} \url{https://youtu.be/90jEkCeoxRs}
 \end{center}
 
 % ══════════════════════════════════════════════════════════
