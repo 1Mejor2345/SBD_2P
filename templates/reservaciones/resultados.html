@@ -60,11 +60,11 @@
                 </ul>
                 <div class="fare-price">
                     {% set base_price = 30 + (v.distancia_km * 0.15) %}
-                    {% set clase = clases[0] if clases else None %}
-                    {% set factor_tarifa = 1.0 + (loop.index0 * 0.2) %}
-                    ${{ "%.2f"|format(base_price * clase.factor_precio * factor_tarifa) }}
+                    {% set factor_clase = clases[0].factor_precio | float if clases else 1.0 %}
+                    {% set factor_tarifa = 1.0 + ((t.id - 1) * 0.2) %}
+                    ${{ "%.2f"|format(base_price * factor_clase * factor_tarifa) }}
                 </div>
-                <a href="{{ url_for('nueva_reservacion', vuelo_id=v.id, tarifa_id=t.id, clase_id=clase.id) }}" class="btn btn-{{ 'primary' if loop.index == 2 else 'outline' }}" style="width: 100%;">
+                <a href="{{ url_for('nueva_reservacion', vuelo_id=v.id, tarifa_id=t.id, clase_id=1) }}" class="btn btn-{{ 'primary' if loop.index == 2 else 'outline' }}" style="width: 100%;">
                     Seleccionar
                 </a>
             </div>

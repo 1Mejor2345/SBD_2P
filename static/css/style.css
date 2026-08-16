@@ -765,6 +765,167 @@ select.form-control {
   justify-content: space-between;
 }
 
+/* Contenedor principal para centrar el boleto */
+.boarding-pass-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 2rem;
+    background-color: #f4f6f9;
+}
+
+/* Diseño de la tarjeta completa */
+.boarding-pass {
+    display: flex;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.08);
+    overflow: hidden;
+    max-width: 850px;
+    width: 100%;
+}
+
+/* Sección izquierda (Principal) */
+.pass-main {
+    flex: 3;
+    padding: 2rem;
+    border-right: 2px dashed #ccc;
+    position: relative;
+}
+
+/* Círculos decorativos para el borde de corte */
+.pass-main::before, .pass-main::after {
+    content: '';
+    position: absolute;
+    right: -10px;
+    width: 20px;
+    height: 20px;
+    background-color: #f4f6f9;
+    border-radius: 50%;
+}
+.pass-main::before { top: -10px; }
+.pass-main::after { bottom: -10px; }
+
+/* Cabecera del boleto */
+.pass-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #002b5e;
+    padding-bottom: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.airline-logo h2 {
+    margin: 0;
+    color: #002b5e;
+    font-weight: 800;
+    font-size: 1.5rem;
+}
+
+.pass-badge {
+    background-color: #e6f4ea;
+    color: #006633;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Grid de detalles */
+.details-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.detail-item small {
+    display: block;
+    color: #6c757d;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    margin-bottom: 0.2rem;
+}
+
+.detail-item strong {
+    font-size: 1.1rem;
+    color: #212529;
+}
+
+.detail-item.highlight strong {
+    font-size: 1.5rem;
+    color: #002b5e;
+}
+
+/* Información de la ruta (Origen - Destino) */
+.route-info {
+    display: flex;
+    align-items: center;
+    margin: 1.5rem 0;
+}
+
+.route-info h2 {
+    margin: 0;
+    font-size: 2.5rem;
+    color: #002b5e;
+}
+
+.flight-icon {
+    flex: 1;
+    text-align: center;
+    color: #adb5bd;
+    position: relative;
+}
+
+.flight-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    border-top: 2px dashed #dee2e6;
+    z-index: 1;
+}
+
+.flight-icon i, .flight-icon small {
+    background: #fff;
+    padding: 0 10px;
+    position: relative;
+    z-index: 2;
+}
+
+/* Sección derecha (Desprendible) */
+.pass-stub {
+    flex: 1;
+    padding: 2rem;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.stub-info small {
+    display: block;
+    color: #6c757d;
+    font-size: 0.8rem;
+}
+
+.stub-info .large-text {
+    font-size: 2rem;
+    color: #002b5e;
+}
+
+/* Código de Barras */
+.barcode {
+    font-family: 'Libre Barcode 39', monospace;
+    font-size: 4rem;
+    color: #000;
+    margin-top: 2rem;
+    transform: scaleY(0.6);
+    transform-origin: top;
+}
+
 /* Perforated edges effect */
 .bp-main::after, .bp-stub::before {
   content: '';

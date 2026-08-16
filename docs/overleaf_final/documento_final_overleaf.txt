@@ -535,10 +535,10 @@ Donde $d$ es la distancia en kilómetros de la ruta, $f_c$ es el factor de la cl
 
 \begin{alerta}[Validaciones de Seguridad Aeronáutica]
 \begin{itemize}[leftmargin=0.5cm]
-    \item El mapa de asientos \textbf{filtra por clase}: un pasajero Economy no puede seleccionar asientos de Business (validado en frontend y en el SP).
-    \item El peso máximo por pieza de equipaje de bodega es \textbf{32 kg} (regulación de salud ocupacional para estibadores, IATA).
-    \item El equipaje se valida contra la \textbf{franquicia de la tarifa} (Light = 0 kg, Standard = 23 kg, Full = 46 kg, Flex = 64 kg).
-    \item La secuencia de embarque se calcula \textbf{automáticamente} incrementando por vuelo.
+    \item \textbf{Ventana de Check-in:} El sistema valida estrictamente mediante el procedimiento almacenado que el check-in solo pueda realizarse \textbf{dentro de las 48 horas} previas al vuelo.
+    \item \textbf{Control de pesos (Trigger):} El peso máximo permitido se valida a nivel de base de datos mediante un trigger (\textbf{50 kg} para bodega y \textbf{10 kg} para cabina), bloqueando la inserción si se excede.
+    \item \textbf{Bloqueo de Asientos:} El mapa interactivo impide que dos usuarios tomen el mismo asiento de forma concurrente, garantizando la consistencia mediante bloqueos \texttt{FOR UPDATE} en la BD.
+    \item \textbf{Integridad de Pases y Tags:} La asignación del tag de equipaje y el código de barras generan identificadores irrepetibles validando la existencia de un boleto activo.
 \end{itemize}
 \end{alerta}
 
@@ -675,27 +675,23 @@ IF (v_vendidos >= (v_capacidad + v_limite_sobreventa)) THEN
 END IF;
 \end{lstlisting}
 
-\subsubsection{Ejemplo: \texttt{sp\_checkin\_pasajero} (Validación de Clase)}
+\subsubsection{Ejemplo: \texttt{sp\_checkin\_pasajero} (Validación de Ventana de Tiempo)}
 
 \begin{lstlisting}
--- Obtener clase del boleto
-SELECT REPLACE(UPPER(cs.nombre), ' ', '_')
-INTO v_clase_boleto
-FROM boletos b 
-JOIN clases_servicio cs ON b.clase_servicio_id = cs.id
+-- Bloqueo del boleto y consulta de fecha de salida
+SELECT b.estado, v.fecha_hora_salida INTO v_estado_boleto, v_fecha_salida
+FROM boletos b JOIN vuelos v ON b.vuelo_id = v.id
 WHERE b.id = p_boleto_id FOR UPDATE;
 
--- Obtener clase del asiento seleccionado
-SELECT c.clase_servicio INTO v_clase_asiento
-FROM asientos_vuelo av
-JOIN configuracion_asientos c ON av.configuracion_asiento_id = c.id
-WHERE av.id = p_asiento_vuelo_id FOR UPDATE;
+-- Bloqueo del asiento
+SELECT estado INTO v_estado_asiento
+FROM asientos_vuelo WHERE id = p_asiento_vuelo_id FOR UPDATE;
 
--- Validacion cruzada: la clase debe coincidir
-IF v_clase_boleto != v_clase_asiento THEN
-    SET p_resultado = 'ERROR: El asiento no corresponde a su clase.';
+-- Validacion estricta de ventana de vuelo (48 horas)
+IF TIMESTAMPDIFF(HOUR, NOW(), v_fecha_salida) > 48 THEN
+    SET p_resultado = 'ERROR: Check-in no disponible aun (>48h).';
     ROLLBACK;
-END IF;
+-- (Continua el flujo de validacion de estados...)
 \end{lstlisting}
 
 % ══════════════════════════════════════════════════════════
